@@ -11,6 +11,7 @@
   - [[#subcommands][SubCommands]]
     - [[#add][Add]]
     - [[#remove][Remove]]
+- [[#usage][Usage]]
 - [[#configuration][Configuration]]
   - [[#general][General]]
     - [[#list-length][list-length]]
@@ -55,6 +56,32 @@ Removes an entry to a theme
 ***** Remove from an existing theme
 #+BEGIN_SRC bash
 rr remove superheroes Batman
+#+END_SRC
+* Usage
+#+BEGIN_SRC sh
+random-ramble 0.1.0
+Cédric Da Fonseca <dafonseca.cedric@gmail.com>
+
+USAGE:
+    rr [FLAGS] [OPTIONS] [starts-with] [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+    -v, --verbose    Verbose mode (-v, -vv, -vvv)
+
+OPTIONS:
+    -a, --adjectives <adjectives>...    A list of adjectives to be choose from [default: adjectives_en]
+    -l, --list-length <list-length>     The length of the list to be returned [default: 10]
+    -t, --themes <themes>...            A list of themes to be choose from
+
+ARGS:
+    <starts-with>
+
+SUBCOMMANDS:
+    add       Add entres to a theme, or create a new theme
+    delete    Generates env from known_hosts
+    help      Prints this message or the help of the given subcommand(s)
 #+END_SRC
 
 * Configuration
