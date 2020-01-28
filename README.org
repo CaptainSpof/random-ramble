@@ -94,13 +94,24 @@ values via the CLI.
 *** list-length
 The length of the list to be generated (default 10)
 
+default value: 10
+
 **** Example
+***** Environment Variable
 #+BEGIN_SRC sh
 export RR_LIST_LENGTH=25
 #+END_SRC
 
+***** Command Line
+#+BEGIN_SRC sh
+rr --list-length 25 [...]
+# or
+rr -l 25 [...]
+#+END_SRC
+
 *** themes path
 The path to the themes files
+
 default value: "./dict/themes"
 
 **** Example
@@ -117,6 +128,7 @@ rr --themes-path="~/.local/random_ramble/themes" [...]
 
 *** adjectives path
 The path to the adjectives files
+
 default value: "./dict/adjectives"
 
 **** Example
