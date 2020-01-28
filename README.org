@@ -15,8 +15,9 @@
   - [[#themes][Themes]]
     - [[#example][Example]]
 - [[#examples][Examples]]
-  - [[#generates-random-words-with-default-parameters-for-words-starting-with-a][Generates random words with default parameters, for words starting with 'A']]
-  - [[#generates-3-random-words-with-default-parameters-for-words-starting-with-a][Generates 3 random words with default parameters, for words starting with 'A']]
+  - [[#starts-with-default-parameters][Starts with, default parameters]]
+  - [[#specify-length][Specify length]]
+  - [[#specify-theme][Specify theme]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -63,7 +64,8 @@ themes:
 #+END_SRC
 
 * Examples
-** Generates random words with default parameters, for words starting with 'A'
+** Starts with, default parameters
+Generates random words with default parameters, for words starting with 'A'
 #+BEGIN_SRC bash
 rr A
 #+END_SRC
@@ -82,9 +84,21 @@ A A
 A A
 #+END_SRC
 
-** Generates 3 random words with default parameters, for words starting with 'A'
+** Specify length
+Generates 3 random words with default parameters, for words starting with 'A'
 #+BEGIN_SRC bash
 rr A -l 3
+#+END_SRC
+output:
+#+BEGIN_SRC bash
+A A
+A A
+A A
+#+END_SRC
+** Specify theme
+Generates 3 random words of theme 'super-heros' with default parameters, for words starting with 'A'
+#+BEGIN_SRC bash
+rr A -l 3 --themes "super-heros"
 #+END_SRC
 output:
 #+BEGIN_SRC bash
