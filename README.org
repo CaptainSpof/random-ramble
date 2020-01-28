@@ -15,6 +15,8 @@
   - [[#themes][Themes]]
     - [[#example][Example]]
 - [[#examples][Examples]]
+  - [[#generates-random-words-with-default-parameters-for-words-starting-with-a][Generates random words with default parameters, for words starting with 'A']]
+  - [[#generates-3-random-words-with-default-parameters-for-words-starting-with-a][Generates 3 random words with default parameters, for words starting with 'A']]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -51,7 +53,7 @@ general:
 ** Themes
 A map of values of:
 key: the name of the theme
-value: the path to the file containing the workds
+value: the path to the file containing the words
 
 *** Example
 #+BEGIN_SRC yaml
@@ -61,6 +63,35 @@ themes:
 #+END_SRC
 
 * Examples
+** Generates random words with default parameters, for words starting with 'A'
+#+BEGIN_SRC bash
+rr A
+#+END_SRC
+output:
+#+BEGIN_SRC bash
+A A
+A A
+A A
+A A
+A A
+A A
+A A
+A A
+A A
+A A
+A A
+#+END_SRC
+
+** Generates 3 random words with default parameters, for words starting with 'A'
+#+BEGIN_SRC bash
+rr A -l 3
+#+END_SRC
+output:
+#+BEGIN_SRC bash
+A A
+A A
+A A
+#+END_SRC
 
 * Troubleshooting
 # Common issues and their solution, or places to look for help.
