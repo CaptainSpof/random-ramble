@@ -8,7 +8,13 @@
   - [[#maintainers][Maintainers]]
 - [[#prerequisites][Prerequisites]]
 - [[#features][Features]]
+  - [[#subcommands][SubCommands]]
 - [[#configuration][Configuration]]
+  - [[#general][General]]
+    - [[#list-length][list-length]]
+  - [[#themes][Themes]]
+    - [[#example][Example]]
+- [[#examples][Examples]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -26,8 +32,35 @@ This module has no prereqisites.
 * Features
 # An in-depth list of features, how to use them, and their dependencies.
 
+** SubCommands
+
 * Configuration
 # How to configure this module, including common problems and how to address them.
+
+** General
+
+*** list-length
+The length of the list to be generated (default 10)
+
+**** Example
+#+BEGIN_SRC yaml
+general:
+  list-length: 25
+#+END_SRC
+
+** Themes
+A map of values of:
+key: the name of the theme
+value: the path to the file containing the workds
+
+*** Example
+#+BEGIN_SRC yaml
+themes:
+  super-heros: ./themes/super-heros.txt
+  disney-characters: ./themes/disney-characters.txt
+#+END_SRC
+
+* Examples
 
 * Troubleshooting
 # Common issues and their solution, or places to look for help.
