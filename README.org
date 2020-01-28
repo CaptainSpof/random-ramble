@@ -9,6 +9,8 @@
 - [[#prerequisites][Prerequisites]]
 - [[#features][Features]]
   - [[#subcommands][SubCommands]]
+    - [[#add][Add]]
+    - [[#remove][Remove]]
 - [[#configuration][Configuration]]
   - [[#general][General]]
     - [[#list-length][list-length]]
@@ -36,6 +38,26 @@ This module has no prereqisites.
 # An in-depth list of features, how to use them, and their dependencies.
 
 ** SubCommands
+
+*** Add
+Adds an entry to a theme, or create a new theme
+
+**** Examples
+
+***** Add to an existing theme
+#+BEGIN_SRC bash
+rr add super-heros Batman
+#+END_SRC
+
+*** Remove
+Removes an entry to a theme
+
+**** Examples
+
+***** Remove from an existing theme
+#+BEGIN_SRC bash
+rr remove super-heros Batman
+#+END_SRC
 
 * Configuration
 # How to configure this module, including common problems and how to address them.

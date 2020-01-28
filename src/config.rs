@@ -17,4 +17,29 @@ pub struct Config {
     pub themes: Vec<String>,
 
     pub starts_with: Option<String>,
+
+    /// cmd
+    #[structopt(subcommand)]
+    pub cmd: Option<Command>,
+}
+
+
+#[derive(StructOpt, Debug)]
+#[structopt(name = "Command")]
+pub enum Command {
+    #[structopt(name = "add")]
+    /// Add entres to a theme, or create a new theme
+    Add(Edit),
+    /// Generates env from known_hosts
+    Delete(Edit),
+}
+
+#[derive(StructOpt, Debug)]
+#[structopt(author, name = "Add", global_settings(&[AppSettings::ColoredHelp]))]
+pub struct Edit {
+    /// Provide a theme
+    pub theme: String,
+
+    /// Provide a list of entries
+    pub entries: Vec<String>,
 }
