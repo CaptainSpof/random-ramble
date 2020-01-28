@@ -101,18 +101,34 @@ export RR_LIST_LENGTH=25
 
 *** themes path
 The path to the themes files
+default value: "./dict/themes"
 
 **** Example
+
+***** Environment Variable
 #+BEGIN_SRC sh
 export RR_THEMES_PATH="~/.local/random_ramble/themes"
 #+END_SRC
 
+***** Command Line
+#+BEGIN_SRC sh
+rr --themes-path="~/.local/random_ramble/themes" [...]
+#+END_SRC
+
 *** adjectives path
 The path to the adjectives files
+default value: "./dict/adjectives"
 
 **** Example
+
+***** Environment Variable
 #+BEGIN_SRC sh
 export RR_ADJS_PATH="~/.local/random_ramble/adjectives"
+#+END_SRC
+
+***** Command Line
+#+BEGIN_SRC sh
+rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
 #+END_SRC
 
 * Examples
