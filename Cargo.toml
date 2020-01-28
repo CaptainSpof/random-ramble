@@ -10,3 +10,5 @@ edition = "2018"
 structopt = "0.3"
 serde = { version = "1.0.101", features = ["derive"] }
 serde_yaml = "0.8.9"
+walkdir = "2.2.9"
+rand = "0.7.3"

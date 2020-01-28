@@ -16,6 +16,10 @@ pub struct Config {
     #[structopt(short, long)]
     pub themes: Vec<String>,
 
+    /// A list of adjectives to be choose from
+    #[structopt(short, long, default_value = "adjectives_en")]
+    pub adjectives: Vec<String>,
+
     pub starts_with: Option<String>,
 
     /// cmd
