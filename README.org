@@ -43,20 +43,18 @@ This module has no prereqisites.
 Adds an entry to a theme, or create a new theme
 
 **** Examples
-
 ***** Add to an existing theme
 #+BEGIN_SRC bash
-rr add super-heros Batman
+rr add superheroes Batman
 #+END_SRC
 
 *** Remove
 Removes an entry to a theme
 
 **** Examples
-
 ***** Remove from an existing theme
 #+BEGIN_SRC bash
-rr remove super-heros Batman
+rr remove superheroes Batman
 #+END_SRC
 
 * Configuration
@@ -81,7 +79,7 @@ value: the path to the file containing the words
 *** Example
 #+BEGIN_SRC yaml
 themes:
-  super-heros: ./themes/super-heros.txt
+  superheroes: ./themes/superheroes.txt
   disney-characters: ./themes/disney-characters.txt
 #+END_SRC
 
@@ -93,17 +91,16 @@ rr A
 #+END_SRC
 output:
 #+BEGIN_SRC bash
-A A
-A A
-A A
-A A
-A A
-A A
-A A
-A A
-A A
-A A
-A A
+Awful All-father Hercules
+Abusive Abe Sapien
+Abnormal Ariel
+Awesome Airman
+Athletic Aegis
+Adorable All For One
+Awkward Adam Destine
+Abject Agent Mulder
+Aboriginal Amunet Black
+Able Aegeus
 #+END_SRC
 
 ** Specify length
@@ -113,20 +110,20 @@ rr A -l 3
 #+END_SRC
 output:
 #+BEGIN_SRC bash
-A A
-A A
-A A
+Absorbed Ajax
+Abnormal Akron
+Angelic Alexander Anderson
 #+END_SRC
 ** Specify theme
-Generates 3 random words of theme 'super-heros' with default parameters, for words starting with 'A'
+Generates 3 random words of theme 'superheroes' with default parameters, for words starting with 'A'
 #+BEGIN_SRC bash
-rr A -l 3 --themes "super-heros"
+rr A -l 3 --themes superheroes
 #+END_SRC
 output:
 #+BEGIN_SRC bash
-A A
-A A
-A A
+Absorbed Ajax
+Abnormal Akron
+Angelic Alexander Anderson
 #+END_SRC
 
 * Troubleshooting

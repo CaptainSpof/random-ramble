@@ -1,11 +1,16 @@
-use structopt::StructOpt;
 use structopt::clap::AppSettings;
+use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 #[structopt(author, name = "random-ramble", global_settings(&[AppSettings::ColoredHelp]))]
 pub struct Config {
     /// Verbose mode (-v, -vv, -vvv)
-    #[structopt(short, long, parse(from_occurrences), long_help = "-v:\t\tINFO|WARN|ERROR\n-vv:\tINFO|WARN|ERROR|DEBUG\n-vvv:\tINFO|WARN|ERROR|DEBUG|TRACE")]
+    #[structopt(
+        short,
+        long,
+        parse(from_occurrences),
+        long_help = "-v:\t\tINFO|WARN|ERROR\n-vv:\tINFO|WARN|ERROR|DEBUG\n-vvv:\tINFO|WARN|ERROR|DEBUG|TRACE"
+    )]
     verbose: u8,
 
     /// The length of the list to be returned
@@ -14,7 +19,7 @@ pub struct Config {
 
     /// A list of themes to be choose from
     #[structopt(short, long)]
-    pub themes: Vec<String>,
+    pub themes: Option<Vec<String>>,
 
     /// A list of adjectives to be choose from
     #[structopt(short, long, default_value = "adjectives_en")]
@@ -26,7 +31,6 @@ pub struct Config {
     #[structopt(subcommand)]
     pub cmd: Option<Command>,
 }
-
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Command")]
