@@ -61,9 +61,10 @@ rr remove superheroes Batman
 #+BEGIN_SRC sh
 random-ramble 0.1.0
 Cédric Da Fonseca <dafonseca.cedric@gmail.com>
+A simple random words generator
 
 USAGE:
-    rr [FLAGS] [OPTIONS] [starts-with] [SUBCOMMAND]
+    random-ramble [FLAGS] [OPTIONS] [starts-with] [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information
@@ -71,16 +72,23 @@ FLAGS:
     -v, --verbose    Verbose mode (-v, -vv, -vvv)
 
 OPTIONS:
-    -a, --adjectives <adjectives>...    A list of adjectives to be choose from [default: adjectives_en]
-    -l, --list-length <list-length>     The length of the list to be returned [default: 10]
-    -t, --themes <themes>...            A list of themes to be choose from
+        --adjectives <adjectives>...           A list of adjectives to be chosen from [default: adjectives_en]
+        --adjectives-path <adjectives-path>    Path to the adjectives files [env:
+                                               RR_ADJS_PATH=/home/daf/Projects/Rust/random-ramble/dict/adjectives]
+                                               [default: ./dict/adjectives]
+    -l, --list-length <list-length>            The length of the list to be returned [env: RR_LIST_LENGTH=]  [default:
+                                               10]
+    -t, --themes <themes>...                   A list of themes to be chosen from
+        --themes-path <themes-path>            Path to the themes files [env:
+                                               RR_THEMES_PATH=/home/daf/Projects/Rust/random-ramble/dict/adjectives]
+                                               [default: ./dict/themes]
 
 ARGS:
     <starts-with>
 
 SUBCOMMANDS:
-    add       Add entres to a theme, or create a new theme
-    delete    Generates env from known_hosts
+    add       Add entries to a theme, or create a new theme
+    delete    Delete entries from a theme, or create a new theme
     help      Prints this message or the help of the given subcommand(s)
 #+END_SRC
 
