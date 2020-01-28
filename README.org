@@ -17,9 +17,9 @@
   - [[#themes][Themes]]
     - [[#example][Example]]
 - [[#examples][Examples]]
-  - [[#starts-with-default-parameters][Starts with, default parameters]]
-  - [[#specify-length][Specify length]]
-  - [[#specify-theme][Specify theme]]
+  - [[#starts-with][Starts with]]
+  - [[#specify-a-length][Specify a length]]
+  - [[#specify-a-theme][Specify a theme]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -84,7 +84,7 @@ themes:
 #+END_SRC
 
 * Examples
-** Starts with, default parameters
+** Starts with
 Generates random words with default parameters, for words starting with 'A'
 #+BEGIN_SRC bash
 rr A
@@ -103,7 +103,7 @@ Aboriginal Amunet Black
 Able Aegeus
 #+END_SRC
 
-** Specify length
+** Specify a length
 Generates 3 random words with default parameters, for words starting with 'A'
 #+BEGIN_SRC bash
 rr A -l 3
@@ -114,16 +114,16 @@ Absorbed Ajax
 Abnormal Akron
 Angelic Alexander Anderson
 #+END_SRC
-** Specify theme
-Generates 3 random words of theme 'superheroes' with default parameters, for words starting with 'A'
+** Specify a theme
+Generates 3 random words of theme 'animals' with default parameters, for words starting with 'A'
 #+BEGIN_SRC bash
-rr A -l 3 --themes superheroes
+rr A -l 3 --themes animals
 #+END_SRC
 output:
 #+BEGIN_SRC bash
-Absorbed Ajax
-Abnormal Akron
-Angelic Alexander Anderson
+Arrogant Aardvark
+Apprehensive Anteater
+Alive Antelope
 #+END_SRC
 
 * Troubleshooting
