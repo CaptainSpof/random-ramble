@@ -6,9 +6,6 @@
 * Table of Contents :TOC_3:noexport:
 - [[#description][Description]]
   - [[#maintainers][Maintainers]]
-  - [[#module-flags][Module Flags]]
-  - [[#plugins][Plugins]]
-  - [[#hacks][Hacks]]
 - [[#prerequisites][Prerequisites]]
 - [[#features][Features]]
 - [[#configuration][Configuration]]
@@ -22,38 +19,6 @@ sprint name.
 
 ** Maintainers
 + @CaptainSpof (Author)
-
-# If this module has no maintainers, then...
-This module has no dedicated maintainers.
-
-** Module Flags
-+ =+flag1= A short description of what this flag does and what it might need
-  when enabled.
-+ =+flag2= A short description of what this flag does and what it might need
-  when enabled.
-+ =+flag3= A short description of what this flag does and what it might need
-  when enabled.
-
-# If this module has no flags, then...
-This module provides no flags.
-
-** Plugins
-# A list of linked plugins
-+ [[https://orgmode.org/][org-plus-contrib]]
-+ [[https://github.com/sabof/org-bullets][org-bullets]]
-+ [[https://github.com/TobiasZawada/org-yt][org-yt]]
-+ [[https://github.com/sebastiencs/company-box][company-box]]* (=+childframe=)
-+ =:lang crystal=
-  + [[https://github.com/brantou/ob-crystal][ob-crystal]]
-+ =:lang go=
-  + [[https://github.com/pope/ob-go][ob-go]]
-+ =+present=
-  + [[https://github.com/anler/centered-window-mode][centered-window]]
-  + [[https://github.com/takaxp/org-tree-slide][org-tree-slide]]
-  + [[https://gitlab.com/oer/org-re-reveal][org-re-reveal]]
-
-** Hacks
-# A list of internal modifications to included packages; omit if unneeded
 
 * Prerequisites
 This module has no prereqisites.
