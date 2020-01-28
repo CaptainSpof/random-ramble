@@ -27,7 +27,7 @@ fn main() {
             buf.lines()
                 .map(|l| l.expect("Could not parse line"))
                 .filter(|l| match config.starts_with {
-                    Some(ref p) => l.starts_with(p),
+                    Some(ref p) => l.to_lowercase().starts_with(&p.to_lowercase()),
                     None => true,
                 })
                 .collect::<Vec<String>>()
@@ -48,7 +48,7 @@ fn main() {
             buf.lines()
                 .map(|l| l.expect("Could not parse line"))
                 .filter(|l| match config.starts_with {
-                    Some(ref p) => l.starts_with(p),
+                    Some(ref p) => l.to_lowercase().starts_with(&p.to_lowercase()),
                     None => true,
                 })
                 .collect::<Vec<String>>()
