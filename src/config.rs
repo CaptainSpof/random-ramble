@@ -23,7 +23,7 @@ pub struct Config {
     #[structopt(long, env = "RR_THEMES_PATH", default_value = "./dict/themes")]
     pub themes_path: PathBuf,
 
-    /// A list of themes to be choose from
+    /// A list of themes to be chosen from
     #[structopt(short, long)]
     pub themes: Option<Vec<String>>,
 
@@ -31,7 +31,7 @@ pub struct Config {
     #[structopt(long, env = "RR_ADJS_PATH", default_value = "./dict/adjectives")]
     pub adjectives_path: PathBuf,
 
-    /// A list of adjectives to be choose from
+    /// A list of adjectives to be chosen from
     #[structopt(long, default_value = "adjectives_en")]
     pub adjectives: Vec<String>,
 
@@ -46,9 +46,9 @@ pub struct Config {
 #[structopt(name = "Command")]
 pub enum Command {
     #[structopt(name = "add")]
-    /// Add entres to a theme, or create a new theme
+    /// Add entries to a theme, or create a new theme
     Add(Edit),
-    /// Generates env from known_hosts
+    /// Delete entries from a theme, or create a new theme
     Delete(Edit),
 }
 
