@@ -65,8 +65,8 @@ fn main() {
     let res: Vec<_> = adj_random_sel
         .iter()
         .zip(themes_random_sel.iter())
+        .map(|(a, t)| format!("{} {}", a, t))
         .collect();
-    let res: Vec<String> = res.iter().map(|(a, t)| format!("{} {}", a, t)).collect();
 
     for r in res {
         println!("{}", r);
