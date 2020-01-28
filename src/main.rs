@@ -10,9 +10,9 @@ use std::io::{prelude::*, BufReader};
 
 fn main() {
     let config: Config = Config::from_args();
-    // println!("{:#?}", config);
+    println!("{:#?}", config);
 
-    let adjs: Vec<String> = WalkDir::new("./dict/adjectives")
+    let adjs: Vec<String> = WalkDir::new(&config.adjectives_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|metadata| metadata.file_type().is_file())
@@ -34,7 +34,7 @@ fn main() {
         })
         .collect();
 
-    let themes: Vec<String> = WalkDir::new("./dict/themes")
+    let themes: Vec<String> = WalkDir::new(&config.themes_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|metadata| metadata.file_type().is_file())
@@ -56,12 +56,11 @@ fn main() {
         .collect();
 
     let adj_random_sel: Vec<_> = adjs
-        .choose_multiple(&mut rand::thread_rng(), config.list_length as usize)
+        .choose_multiple(&mut rand::thread_rng(), config.list_length)
         .collect();
     let themes_random_sel: Vec<_> = themes
-        .choose_multiple(&mut rand::thread_rng(), config.list_length as usize)
+        .choose_multiple(&mut rand::thread_rng(), config.list_length)
         .collect();
-
     let res: Vec<_> = adj_random_sel
         .iter()
         .zip(themes_random_sel.iter())

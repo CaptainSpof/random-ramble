@@ -1,8 +1,10 @@
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
+use std::path::PathBuf;
+
 #[derive(StructOpt, Debug)]
-#[structopt(author, name = "random-ramble", global_settings(&[AppSettings::ColoredHelp]))]
+#[structopt(author, name = "random-ramble", about = "A simple random words generator", global_settings(&[AppSettings::ColoredHelp]))]
 pub struct Config {
     /// Verbose mode (-v, -vv, -vvv)
     #[structopt(
@@ -14,15 +16,23 @@ pub struct Config {
     verbose: u8,
 
     /// The length of the list to be returned
-    #[structopt(short, long, default_value = "10")]
-    pub list_length: u8,
+    #[structopt(short, long, env = "RR_LIST_LENGTH", default_value = "10")]
+    pub list_length: usize,
+
+    /// Path to the themes files
+    #[structopt(long, env = "RR_THEMES_PATH", default_value = "./dict/themes")]
+    pub themes_path: PathBuf,
 
     /// A list of themes to be choose from
     #[structopt(short, long)]
     pub themes: Option<Vec<String>>,
 
+    /// Path to the adjectives files
+    #[structopt(long, env = "RR_ADJS_PATH", default_value = "./dict/adjectives")]
+    pub adjectives_path: PathBuf,
+
     /// A list of adjectives to be choose from
-    #[structopt(short, long, default_value = "adjectives_en")]
+    #[structopt(long, default_value = "adjectives_en")]
     pub adjectives: Vec<String>,
 
     pub starts_with: Option<String>,

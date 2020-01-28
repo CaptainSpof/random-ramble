@@ -15,8 +15,8 @@
 - [[#configuration][Configuration]]
   - [[#general][General]]
     - [[#list-length][list-length]]
-  - [[#themes][Themes]]
-    - [[#example][Example]]
+    - [[#themes-path][themes path]]
+    - [[#adjectives-path][adjectives path]]
 - [[#examples][Examples]]
   - [[#starts-with][Starts with]]
   - [[#specify-a-length][Specify a length]]
@@ -86,6 +86,8 @@ SUBCOMMANDS:
 
 * Configuration
 # How to configure this module, including common problems and how to address them.
+This project is configured via environment variables or by setting the desired
+values via the CLI.
 
 ** General
 
@@ -93,21 +95,24 @@ SUBCOMMANDS:
 The length of the list to be generated (default 10)
 
 **** Example
-#+BEGIN_SRC yaml
-general:
-  list-length: 25
+#+BEGIN_SRC sh
+export RR_LIST_LENGTH=25
 #+END_SRC
 
-** Themes
-A map of values of:
-key: the name of the theme
-value: the path to the file containing the words
+*** themes path
+The path to the themes files
 
-*** Example
-#+BEGIN_SRC yaml
-themes:
-  superheroes: ./themes/superheroes.txt
-  disney-characters: ./themes/disney-characters.txt
+**** Example
+#+BEGIN_SRC sh
+export RR_THEMES_PATH="~/.local/random_ramble/themes"
+#+END_SRC
+
+*** adjectives path
+The path to the adjectives files
+
+**** Example
+#+BEGIN_SRC sh
+export RR_ADJS_PATH="~/.local/random_ramble/adjectives"
 #+END_SRC
 
 * Examples
