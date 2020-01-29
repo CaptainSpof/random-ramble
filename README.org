@@ -6,7 +6,11 @@
 * Table of Contents :TOC_3:noexport:
 - [[#description][Description]]
   - [[#maintainers][Maintainers]]
-- [[#prerequisites][Prerequisites]]
+- [[#installation][Installation]]
+  - [[#building-from-sources][Building from sources]]
+    - [[#prerequisites][Prerequisites]]
+    - [[#build-for-dev][Build for dev]]
+    - [[#build-for-release][Build for release]]
 - [[#features][Features]]
   - [[#subcommands][SubCommands]]
     - [[#add][Add]]
@@ -14,13 +18,14 @@
 - [[#usage][Usage]]
 - [[#configuration][Configuration]]
   - [[#general][General]]
-    - [[#list-length][list-length]]
+    - [[#number][number]]
     - [[#themes-path][themes path]]
     - [[#adjectives-path][adjectives path]]
 - [[#examples][Examples]]
   - [[#starts-with][Starts with]]
   - [[#specify-a-length][Specify a length]]
   - [[#specify-a-theme][Specify a theme]]
+  - [[#discard-a-theme][Discard a theme]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -32,8 +37,24 @@ sprint name.
 ** Maintainers
 + @CaptainSpof (Author)
 
-* Prerequisites
-This module has no prereqisites.
+
+* Installation
+
+** Building from sources
+To build from source, first, clone this repository.
+
+*** Prerequisites
+Requires cargo
+
+*** Build for dev
+#+BEGIN_SRC sh
+cargo build
+#+END_SRC
+
+*** Build for release
+#+BEGIN_SRC sh
+cargo build --release
+#+END_SRC
 
 * Features
 # An in-depth list of features, how to use them, and their dependencies.
@@ -99,22 +120,20 @@ values via the CLI.
 
 ** General
 
-*** list-length
-The length of the list to be generated (default 10)
+*** number
+The number of results to be generated (default 10)
 
 default value: 10
 
 **** Example
 ***** Environment Variable
 #+BEGIN_SRC sh
-export RR_LIST_LENGTH=25
+export RR_NB_RESULT=25
 #+END_SRC
 
 ***** Command Line
 #+BEGIN_SRC sh
-rr --list-length 25 [...]
-# or
-rr -l 25 [...]
+rr -n 25 [...]
 #+END_SRC
 
 *** themes path
@@ -151,6 +170,7 @@ export RR_ADJS_PATH="~/.local/random_ramble/adjectives"
 rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
 #+END_SRC
 
+
 * Examples
 ** Starts with
 Generates random words with default parameters, for words starting with 'A'
@@ -170,7 +190,6 @@ Abject Agent Mulder
 Aboriginal Amunet Black
 Able Aegeus
 #+END_SRC
-
 ** Specify a length
 Generates 3 random words with default parameters, for words starting with 'A'
 #+BEGIN_SRC bash
@@ -192,6 +211,17 @@ output:
 Arrogant Aardvark
 Apprehensive Anteater
 Alive Antelope
+#+END_SRC
+** Discard a theme
+Generates 3 random words of any available theme besides 'disney' with default parameters
+#+BEGIN_SRC bash
+rr A -l 3 --themes '!disney'
+#+END_SRC
+output:
+#+BEGIN_SRC bash
+Ambitious Dogfish
+Stormy Fironic
+Resourceful Magpie
 #+END_SRC
 
 * Troubleshooting
