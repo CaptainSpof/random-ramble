@@ -13,11 +13,11 @@ pub struct Config {
         parse(from_occurrences),
         long_help = "-v:\t\tINFO|WARN|ERROR\n-vv:\tINFO|WARN|ERROR|DEBUG\n-vvv:\tINFO|WARN|ERROR|DEBUG|TRACE"
     )]
-    verbose: u8,
+    pub verbose: u8,
 
     /// The length of the list to be returned
-    #[structopt(short, long, env = "RR_LIST_LENGTH", default_value = "10")]
-    pub list_length: usize,
+    #[structopt(short, env = "RR_NB_RESULT", default_value = "10")]
+    pub number: usize,
 
     /// Path to the themes files
     #[structopt(long, env = "RR_THEMES_PATH", default_value = "./dict/themes")]
