@@ -5,6 +5,13 @@ authors = ["Cédric Da Fonseca <dafonseca.cedric@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "random_ramble"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rr"
+path = "src/cli/main.rs"
 
 [dependencies]
 structopt = "0.3"

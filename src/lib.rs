@@ -1,31 +1,20 @@
 #[macro_use]
 extern crate log;
 
-use env_logger::{Builder, WriteStyle};
-use log::LevelFilter;
-
 use rand::seq::SliceRandom;
-use std::io::{prelude::*, BufReader};
-use structopt::StructOpt;
+
 use walkdir::WalkDir;
+use std::path::PathBuf;
+use std::io::{prelude::*, BufReader};
 
-mod config;
-
-use config::Config;
-
-fn main() {
-    let config: Config = Config::from_args();
-    init_logger(config.verbose);
-    debug!("config: {:#?}", config);
-
-    let adjs: Vec<String> = WalkDir::new(&config.adjectives_path)
+fn get_adjs(adjs_path: &PathBuf, adjs: Vec<String>, starts_with: &Option<String>) -> Vec<String> {
+    WalkDir::new(adjs_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|metadata| metadata.file_type().is_file())
         .filter(|file| {
             debug!("adj file: {:#?}", file);
-            config
-                .adjectives
+                adjs
                 .contains(&file.file_name().to_str().unwrap().to_string())
         })
         .flat_map(|f| {
@@ -33,21 +22,23 @@ fn main() {
             let buf = BufReader::new(file);
             buf.lines()
                 .map(|l| l.expect("Could not parse line"))
-                .filter(|l| match config.starts_with {
+                .filter(|l| match starts_with {
                     Some(ref p) => l.to_lowercase().starts_with(&p.to_lowercase()),
                     None => true,
                 })
                 .collect::<Vec<String>>()
         })
-        .collect();
+        .collect()
+}
 
-    let themes: Vec<(String, String)> = WalkDir::new(&config.themes_path)
+fn get_themes(themes_path: &PathBuf, themes: Option<Vec<String>>, starts_with: &Option<String>) -> Vec<(String, String)> {
+    WalkDir::new(&themes_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|metadata| metadata.file_type().is_file())
         .filter(|file| {
             debug!("theme file: {:#?}", file);
-            match &config.themes {
+            match &themes {
                 Some(sel_themes) if sel_themes.iter().any(|t| t.starts_with('!')) => {
                     let discarded_themes: Vec<_> = sel_themes
                         .iter()
@@ -71,57 +62,53 @@ fn main() {
             let buf = BufReader::new(file);
             buf.lines()
                 .map(|l| (l.expect("Could not parse line"), file_name.to_string()))
-                .filter(|(l, _)| match config.starts_with {
+                .filter(|(l, _)| match starts_with {
                     Some(ref p) => l.to_lowercase().starts_with(&p.to_lowercase()),
                     None => true,
                 })
                 .collect::<Vec<(String, String)>>()
         })
-        .collect();
+        .collect()
+}
+
+pub fn get_random_ramble(adjs_path: &PathBuf, adjs: Vec<String>, themes_path: &PathBuf, themes: Option<Vec<String>>, starts_with: Option<String>, number: usize) -> Vec<String> {
+    let adjs: Vec<_> = get_adjs(adjs_path, adjs, &starts_with);
+    let themes: Vec<_> = get_themes(themes_path, themes, &starts_with);
 
     let adj_random_sel: Vec<_> = adjs
-        .choose_multiple(&mut rand::thread_rng(), config.number)
+        .choose_multiple(&mut rand::thread_rng(), number)
         .collect();
+
     let themes_random_sel: Vec<_> = themes
-        .choose_multiple(&mut rand::thread_rng(), config.number)
+        .choose_multiple(&mut rand::thread_rng(), number)
         .collect();
-    let res: Vec<_> = adj_random_sel
+
+    adj_random_sel
+        .iter()
+        .zip(themes_random_sel.iter())
+        .map(|(a, (t, _))| {
+            format!("{} {}", a, t)
+        })
+        .collect()
+}
+
+pub fn get_random_ramble_with_provenance(adjs_path: &PathBuf, adjs: Vec<String>, themes_path: &PathBuf, themes: Option<Vec<String>>, starts_with: Option<String>, number: usize) -> Vec<String> {
+    let adjs: Vec<_> = get_adjs(adjs_path, adjs, &starts_with);
+    let themes: Vec<_> = get_themes(themes_path, themes, &starts_with);
+
+    let adj_random_sel: Vec<_> = adjs
+        .choose_multiple(&mut rand::thread_rng(), number)
+        .collect();
+
+    let themes_random_sel: Vec<_> = themes
+        .choose_multiple(&mut rand::thread_rng(), number)
+        .collect();
+
+    adj_random_sel
         .iter()
         .zip(themes_random_sel.iter())
         .map(|(a, (t, p))| {
-            if config.verbose >= 2 {
-                format!("[{:^20}] {} {}", p, a, t)
-            } else {
-                format!("{} {}", a, t)
-            }
+            format!("[{:^15}]\t{} {}", p, a, t)
         })
-        .collect();
-
-    for r in res {
-        println!("{}", r);
-    }
-}
-
-/// Init logger based on verbose value
-/// # Arguments
-///
-/// * `verbose` - An integer representing the step of verbosity
-///
-/// TODO: Maybe allow logging to file ?
-///
-fn init_logger(verbose: u8) {
-    let mut builder = Builder::new();
-
-    match verbose {
-        0 => builder
-            .filter(None, LevelFilter::Info)
-            .format_timestamp(None)
-            .format_module_path(false),
-        1 => builder.filter(None, LevelFilter::Info),
-        2 => builder.filter(None, LevelFilter::Debug),
-        _ => builder.filter(None, LevelFilter::Trace),
-    };
-
-    builder.write_style(WriteStyle::Always);
-    builder.init();
+        .collect()
 }
