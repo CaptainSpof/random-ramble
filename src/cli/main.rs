@@ -9,7 +9,7 @@ use structopt::StructOpt;
 mod config;
 
 use config::Config;
-use random_ramble::{ get_random_ramble, get_random_ramble_with_provenance };
+use random_ramble::{get_random_ramble, get_random_ramble_with_provenance};
 
 fn main() {
     let config: Config = Config::from_args();
@@ -17,8 +17,22 @@ fn main() {
     debug!("config: {:#?}", config);
 
     let res = match config.verbose {
-        v if v < 1 => get_random_ramble(&config.adjectives_path, config.adjectives, &config.themes_path, config.themes, config.starts_with, config.number),
-        _ => get_random_ramble_with_provenance(&config.adjectives_path, config.adjectives, &config.themes_path, config.themes, config.starts_with, config.number),
+        v if v < 1 => get_random_ramble(
+            &config.adjectives_path,
+            config.adjectives,
+            &config.themes_path,
+            config.themes,
+            config.pattern.as_deref(),
+            config.number,
+        ),
+        _ => get_random_ramble_with_provenance(
+            &config.adjectives_path,
+            config.adjectives,
+            &config.themes_path,
+            config.themes,
+            config.pattern.as_deref(),
+            config.number,
+        ),
     };
 
     for r in res {

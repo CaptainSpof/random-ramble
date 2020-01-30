@@ -3,26 +3,25 @@ extern crate log;
 
 use rand::seq::SliceRandom;
 
-use walkdir::WalkDir;
-use std::path::PathBuf;
 use std::io::{prelude::*, BufReader};
+use std::path::PathBuf;
+use walkdir::WalkDir;
 
-fn get_adjs(adjs_path: &PathBuf, adjs: Vec<String>, starts_with: &Option<String>) -> Vec<String> {
+fn get_adjs(adjs_path: &PathBuf, adjs: Vec<String>, pattern: Option<&str>) -> Vec<String> {
     WalkDir::new(adjs_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|metadata| metadata.file_type().is_file())
         .filter(|file| {
             debug!("adj file: {:#?}", file);
-                adjs
-                .contains(&file.file_name().to_str().unwrap().to_string())
+            adjs.contains(&file.file_name().to_str().unwrap().to_string())
         })
         .flat_map(|f| {
             let file = std::fs::File::open(f.path()).expect("Unable to open file");
             let buf = BufReader::new(file);
             buf.lines()
                 .map(|l| l.expect("Could not parse line"))
-                .filter(|l| match starts_with {
+                .filter(|l| match pattern {
                     Some(ref p) => l.to_lowercase().starts_with(&p.to_lowercase()),
                     None => true,
                 })
@@ -31,7 +30,11 @@ fn get_adjs(adjs_path: &PathBuf, adjs: Vec<String>, starts_with: &Option<String>
         .collect()
 }
 
-fn get_themes(themes_path: &PathBuf, themes: Option<Vec<String>>, starts_with: &Option<String>) -> Vec<(String, String)> {
+fn get_themes(
+    themes_path: &PathBuf,
+    themes: Option<Vec<String>>,
+    pattern: Option<&str>,
+) -> Vec<(String, String)> {
     WalkDir::new(&themes_path)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -62,7 +65,7 @@ fn get_themes(themes_path: &PathBuf, themes: Option<Vec<String>>, starts_with: &
             let buf = BufReader::new(file);
             buf.lines()
                 .map(|l| (l.expect("Could not parse line"), file_name.to_string()))
-                .filter(|(l, _)| match starts_with {
+                .filter(|(l, _)| match pattern {
                     Some(ref p) => l.to_lowercase().starts_with(&p.to_lowercase()),
                     None => true,
                 })
@@ -71,9 +74,16 @@ fn get_themes(themes_path: &PathBuf, themes: Option<Vec<String>>, starts_with: &
         .collect()
 }
 
-pub fn get_random_ramble(adjs_path: &PathBuf, adjs: Vec<String>, themes_path: &PathBuf, themes: Option<Vec<String>>, starts_with: Option<String>, number: usize) -> Vec<String> {
-    let adjs: Vec<_> = get_adjs(adjs_path, adjs, &starts_with);
-    let themes: Vec<_> = get_themes(themes_path, themes, &starts_with);
+pub fn get_random_ramble(
+    adjs_path: &PathBuf,
+    adjs: Vec<String>,
+    themes_path: &PathBuf,
+    themes: Option<Vec<String>>,
+    pattern: Option<&str>,
+    number: usize,
+) -> Vec<String> {
+    let adjs: Vec<_> = get_adjs(adjs_path, adjs, pattern);
+    let themes: Vec<_> = get_themes(themes_path, themes, pattern);
 
     let adj_random_sel: Vec<_> = adjs
         .choose_multiple(&mut rand::thread_rng(), number)
@@ -86,15 +96,20 @@ pub fn get_random_ramble(adjs_path: &PathBuf, adjs: Vec<String>, themes_path: &P
     adj_random_sel
         .iter()
         .zip(themes_random_sel.iter())
-        .map(|(a, (t, _))| {
-            format!("{} {}", a, t)
-        })
+        .map(|(a, (t, _))| format!("{} {}", a, t))
         .collect()
 }
 
-pub fn get_random_ramble_with_provenance(adjs_path: &PathBuf, adjs: Vec<String>, themes_path: &PathBuf, themes: Option<Vec<String>>, starts_with: Option<String>, number: usize) -> Vec<String> {
-    let adjs: Vec<_> = get_adjs(adjs_path, adjs, &starts_with);
-    let themes: Vec<_> = get_themes(themes_path, themes, &starts_with);
+pub fn get_random_ramble_with_provenance(
+    adjs_path: &PathBuf,
+    adjs: Vec<String>,
+    themes_path: &PathBuf,
+    themes: Option<Vec<String>>,
+    starts_with: Option<&str>,
+    number: usize,
+) -> Vec<String> {
+    let adjs: Vec<_> = get_adjs(adjs_path, adjs, starts_with);
+    let themes: Vec<_> = get_themes(themes_path, themes, starts_with);
 
     let adj_random_sel: Vec<_> = adjs
         .choose_multiple(&mut rand::thread_rng(), number)
@@ -107,8 +122,6 @@ pub fn get_random_ramble_with_provenance(adjs_path: &PathBuf, adjs: Vec<String>,
     adj_random_sel
         .iter()
         .zip(themes_random_sel.iter())
-        .map(|(a, (t, p))| {
-            format!("[{:^15}]\t{} {}", p, a, t)
-        })
+        .map(|(a, (t, p))| format!("[{:^15}]\t{} {}", p, a, t))
         .collect()
 }

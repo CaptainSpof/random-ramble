@@ -37,7 +37,8 @@ pub struct Config {
     #[structopt(long, default_value = "adjectives_en")]
     pub adjectives: Vec<String>,
 
-    pub starts_with: Option<String>,
+    /// The pattern to start with
+    pub pattern: Option<String>,
 
     /// cmd
     #[structopt(subcommand)]
