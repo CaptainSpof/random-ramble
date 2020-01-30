@@ -44,7 +44,7 @@ sprint name.
 To build from source, first, clone this repository.
 
 *** Prerequisites
-Requires cargo
+Requires cargo 1.40
 
 *** Build for dev
 #+BEGIN_SRC sh
