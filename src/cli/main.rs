@@ -7,8 +7,9 @@ use log::LevelFilter;
 use structopt::StructOpt;
 
 mod config;
+mod cmds;
 
-use config::Config;
+use config::{ Config, Command };
 use random_ramble::{get_random_ramble, get_random_ramble_with_provenance};
 
 fn main() {
@@ -16,28 +17,35 @@ fn main() {
     init_logger(config.verbose);
     debug!("config: {:#?}", config);
 
-    let res = match config.verbose {
-        v if v < 1 => get_random_ramble(
-            &config.adjectives_path,
-            config.adjectives,
-            &config.themes_path,
-            config.themes,
-            config.pattern.as_deref(),
-            config.number,
-        ),
-        _ => get_random_ramble_with_provenance(
-            &config.adjectives_path,
-            config.adjectives,
-            &config.themes_path,
-            config.themes,
-            config.pattern.as_deref(),
-            config.number,
-        ),
-    };
+    match config.cmd {
+        Some(Command::Add(c)) => cmds::add(&config.themes_path, c.theme, c.entries),
+        Some(Command::Delete(_)) => cmds::delete(),
+        None => {
 
-    for r in res {
-        println!("{}", r);
-    }
+            let res = match config.verbose {
+                v if v < 1 => get_random_ramble(
+                    &config.adjectives_path,
+                    config.adjectives,
+                    &config.themes_path,
+                    config.themes,
+                    config.pattern.as_deref(),
+                    config.number,
+                ),
+                _ => get_random_ramble_with_provenance(
+                    &config.adjectives_path,
+                    config.adjectives,
+                    &config.themes_path,
+                    config.themes,
+                    config.pattern.as_deref(),
+                    config.number,
+                ),
+            };
+
+            for r in res {
+                println!("{}", r);
+            }
+        }
+    };
 }
 
 /// Init logger based on verbose value
