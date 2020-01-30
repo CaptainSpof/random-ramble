@@ -80,32 +80,47 @@ rr remove superheroes Batman
 #+END_SRC
 * Usage
 #+BEGIN_SRC sh
-random-ramble 0.1.0
+random-ramble 0.2.0
 Cédric Da Fonseca <dafonseca.cedric@gmail.com>
 A simple random words generator
 
 USAGE:
-    random-ramble [FLAGS] [OPTIONS] [starts-with] [SUBCOMMAND]
+    rr [FLAGS] [OPTIONS] [pattern] [SUBCOMMAND]
 
 FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-    -v, --verbose    Verbose mode (-v, -vv, -vvv)
+    -h, --help
+            Prints help information
+
+    -V, --version
+            Prints version information
+
+    -v, --verbose
+            -v:		INFO|WARN|ERROR
+            -vv:	INFO|WARN|ERROR|DEBUG
+            -vvv:	INFO|WARN|ERROR|DEBUG|TRACE
 
 OPTIONS:
-        --adjectives <adjectives>...           A list of adjectives to be chosen from [default: adjectives_en]
-        --adjectives-path <adjectives-path>    Path to the adjectives files [env:
-                                               RR_ADJS_PATH=/home/daf/Projects/Rust/random-ramble/dict/adjectives]
-                                               [default: ./dict/adjectives]
-    -l, --list-length <list-length>            The length of the list to be returned [env: RR_LIST_LENGTH=]  [default:
-                                               10]
-    -t, --themes <themes>...                   A list of themes to be chosen from
-        --themes-path <themes-path>            Path to the themes files [env:
-                                               RR_THEMES_PATH=/home/daf/Projects/Rust/random-ramble/dict/adjectives]
-                                               [default: ./dict/themes]
+        --adjectives <adjectives>...
+            A list of adjectives to be chosen from [default: adjectives_en]
+
+        --adjectives-path <adjectives-path>
+            Path to the adjectives files [env: RR_ADJS_PATH=/home/daf/Projects/Rust/random-ramble/dict/adjectives]
+            [default: ./dict/adjectives]
+    -n <number>
+            The length of the list to be returned [env: RR_NB_RESULT=]  [default: 10]
+
+    -t, --themes <themes>...
+            A list of themes to be chosen from.
+
+            Themes preceded by '!' will be discarded
+        --themes-path <themes-path>
+            Path to the themes files [env: RR_THEMES_PATH=/home/daf/Projects/Rust/random-ramble/dict/themes]  [default:
+            ./dict/themes]
 
 ARGS:
-    <starts-with>
+    <pattern>
+            The pattern to start with
+
 
 SUBCOMMANDS:
     add       Add entries to a theme, or create a new theme
