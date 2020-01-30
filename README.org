@@ -22,7 +22,7 @@
     - [[#themes-path][themes path]]
     - [[#adjectives-path][adjectives path]]
 - [[#examples][Examples]]
-  - [[#starts-with][Starts with]]
+  - [[#pattern---starts-with][Pattern - starts with]]
   - [[#specify-a-length][Specify a length]]
   - [[#specify-a-theme][Specify a theme]]
   - [[#discard-a-theme][Discard a theme]]
@@ -172,7 +172,7 @@ rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
 
 
 * Examples
-** Starts with
+** Pattern - starts with
 Generates random words with default parameters, for words starting with 'A'
 #+BEGIN_SRC bash
 rr A
