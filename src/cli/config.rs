@@ -52,6 +52,9 @@ pub enum Command {
     /// Add entries to a theme, or create a new theme
     Add(Edit),
     /// Delete entries from a theme, or create a new theme
+    ///
+    /// Available aliases: [remove, del, rm]
+    #[structopt(aliases = &["remove", "del", "rm"])]
     Delete(Edit),
 }
 
@@ -64,7 +67,7 @@ pub struct Edit {
     /// Provide a list of entries
     pub entries: Vec<String>,
 
-    /// Append to adjectif
+    /// Work against adjectif
     #[structopt(short)]
     pub adjs: bool,
 }
