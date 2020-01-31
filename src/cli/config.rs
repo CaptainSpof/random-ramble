@@ -63,4 +63,8 @@ pub struct Edit {
 
     /// Provide a list of entries
     pub entries: Vec<String>,
+
+    /// Append to adjectif
+    #[structopt(short)]
+    pub adjs: bool,
 }

@@ -6,10 +6,10 @@ use log::LevelFilter;
 
 use structopt::StructOpt;
 
-mod config;
 mod cmds;
+mod config;
 
-use config::{ Config, Command };
+use config::{Command, Config};
 use random_ramble::{get_random_ramble, get_random_ramble_with_provenance};
 
 fn main() {
@@ -18,10 +18,21 @@ fn main() {
     debug!("config: {:#?}", config);
 
     match config.cmd {
-        Some(Command::Add(c)) => cmds::add(&config.themes_path, c.theme, c.entries),
-        Some(Command::Delete(c)) => cmds::delete(&config.themes_path, c.theme, c.entries),
+        Some(Command::Add(c)) => {
+            if c.adjs {
+                cmds::add(&config.adjectives_path, c.theme, c.entries)
+            } else {
+                cmds::add(&config.themes_path, c.theme, c.entries);
+            }
+        }
+        Some(Command::Delete(c)) => {
+            if c.adjs {
+                cmds::delete(&config.adjectives_path, c.theme, c.entries)
+            } else {
+                cmds::delete(&config.themes_path, c.theme, c.entries);
+            }
+        }
         None => {
-
             let res = match config.verbose {
                 v if v < 1 => get_random_ramble(
                     &config.adjectives_path,
