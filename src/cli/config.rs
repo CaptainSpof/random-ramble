@@ -59,7 +59,6 @@ pub enum Command {
 }
 
 #[derive(StructOpt, Debug)]
-#[structopt(author, name = "Add", global_settings(&[AppSettings::ColoredHelp]))]
 pub struct Edit {
     /// Provide a theme
     pub theme: String,
