@@ -32,8 +32,5 @@ ENV RR_ADJS_PATH=/dict/adjectives/
 
 ENV RR_THEMES_PATH=/dict/themes/
 
-
-COPY ./dict ./dict
-
 # set the startup command to run your binary
 CMD ["./rr"]
