@@ -11,6 +11,7 @@
     - [[#prerequisites][Prerequisites]]
     - [[#build-for-dev][Build for dev]]
     - [[#build-for-release][Build for release]]
+    - [[#build-a-docker-image][Build a Docker image]]
 - [[#features][Features]]
   - [[#subcommands][SubCommands]]
     - [[#add][Add]]
@@ -54,6 +55,11 @@ cargo build
 *** Build for release
 #+BEGIN_SRC sh
 cargo build --release
+#+END_SRC
+
+*** Build a Docker image
+#+BEGIN_SRC sh
+docker build -t random-ramble .
 #+END_SRC
 
 * Features
