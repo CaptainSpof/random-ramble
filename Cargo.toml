@@ -16,7 +16,6 @@ path = "src/cli/main.rs"
 [dependencies]
 structopt = "0.3"
 serde = { version = "1.0.101", features = ["derive"] }
-serde_yaml = "0.8.9"
 walkdir = "2.2.9"
 rand = "0.7.3"
 log = "0.4"
