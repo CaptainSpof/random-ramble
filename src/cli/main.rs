@@ -19,7 +19,7 @@ fn main() {
 
     match config.cmd {
         Some(Command::Add(c)) => cmds::add(&config.themes_path, c.theme, c.entries),
-        Some(Command::Delete(_)) => cmds::delete(),
+        Some(Command::Delete(c)) => cmds::delete(&config.themes_path, c.theme, c.entries),
         None => {
 
             let res = match config.verbose {
