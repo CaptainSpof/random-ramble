@@ -44,7 +44,7 @@ sprint name.
 To build from source, first, clone this repository.
 
 *** Prerequisites
-Requires cargo 1.40
+Requires cargo 1.40 or newer
 
 *** Build for dev
 #+BEGIN_SRC sh
@@ -69,6 +69,10 @@ Adds an entry to a theme, or create a new theme
 #+BEGIN_SRC bash
 rr add superheroes Batman
 #+END_SRC
+***** Add to adjectives
+#+BEGIN_SRC bash
+rr add -a adjectives_fr Inutile
+#+END_SRC
 
 *** Remove
 Removes an entry to a theme
@@ -77,6 +81,10 @@ Removes an entry to a theme
 ***** Remove from an existing theme
 #+BEGIN_SRC bash
 rr remove superheroes Batman
+#+END_SRC
+***** Remove from adjectives
+#+BEGIN_SRC bash
+rr remove -a adjectives_fr Inutile
 #+END_SRC
 * Usage
 #+BEGIN_SRC sh
