@@ -7,10 +7,10 @@ WORKDIR /random-ramble
 
 # copy over your manifests
 COPY ./Cargo.lock ./Cargo.lock
-COPY ./.Cargo-cache-dep.toml ./Cargo.toml
+COPY ./CargoCacheDeps.toml ./Cargo.toml
 
 # this build step will cache your dependencies
-RUN cargo build
+RUN cargo build --release
 RUN rm src/*.rs
 
 # copy your source tree
@@ -19,14 +19,14 @@ COPY ./src ./src
 COPY ./Cargo.toml ./Cargo.toml
 
 # build for release
-RUN rm ./target/debug/deps/random_ramble*
-RUN cargo build
+RUN rm ./target/release/deps/random_ramble*
+RUN cargo build --release
 
 # our final base
 FROM rust:latest
 
 # copy the build artifact from the build stage
-COPY --from=build /random-ramble/target/debug/rr /usr/bin/rr
+COPY --from=build /random-ramble/target/release/rr /usr/bin/rr
 
 ENV RR_ADJS_PATH=/dict/adjectives/
 
