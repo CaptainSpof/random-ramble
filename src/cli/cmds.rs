@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::path::PathBuf;
 
-pub fn add(theme_path: &PathBuf, theme: String, entries: Vec<String>) {
+pub fn add(theme_path: &PathBuf, theme: &str, entries: Vec<String>) {
     debug!("trying to add: {:?} to {}", entries, theme);
 
     let file = OpenOptions::new()
@@ -39,7 +39,7 @@ pub fn add(theme_path: &PathBuf, theme: String, entries: Vec<String>) {
     }
 }
 
-pub fn delete(theme_path: &PathBuf, theme: String, entries: Vec<String>) {
+pub fn delete(theme_path: &PathBuf, theme: &str, entries: Vec<String>) {
     debug!("trying to delete: {:?} to {}", entries, theme);
 
     let file = OpenOptions::new()

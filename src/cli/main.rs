@@ -20,16 +20,16 @@ fn main() {
     match config.cmd {
         Some(Command::Add(c)) => {
             if c.adjs {
-                cmds::add(&config.adjectives_path, c.theme, c.entries)
+                cmds::add(&config.adjectives_path, &c.theme, c.entries())
             } else {
-                cmds::add(&config.themes_path, c.theme, c.entries);
+                cmds::add(&config.themes_path, &c.theme, c.entries());
             }
         }
         Some(Command::Delete(c)) => {
             if c.adjs {
-                cmds::delete(&config.adjectives_path, c.theme, c.entries)
+                cmds::delete(&config.adjectives_path, &c.theme, c.entries())
             } else {
-                cmds::delete(&config.themes_path, c.theme, c.entries);
+                cmds::delete(&config.themes_path, &c.theme, c.entries());
             }
         }
         None => {

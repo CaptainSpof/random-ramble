@@ -3,6 +3,8 @@ use structopt::StructOpt;
 
 use std::path::PathBuf;
 
+use std::io::{self, Read};
+
 #[derive(StructOpt, Debug)]
 #[structopt(author, name = "random-ramble", about = "A simple random words generator", global_settings(&[AppSettings::ColoredHelp]))]
 pub struct Config {
@@ -64,9 +66,28 @@ pub struct Edit {
     pub theme: String,
 
     /// Provide a list of entries
-    pub entries: Vec<String>,
+    ///
+    /// Will attempt to read from stdin
+    entries: Vec<String>,
 
     /// Work against adjectif
     #[structopt(short)]
     pub adjs: bool,
+}
+
+impl Edit {
+    pub fn entries(&self) -> Vec<String> {
+        match &self.entries {
+            entries if entries.is_empty() => {
+                let mut buffer = String::new();
+                let stdin = io::stdin();
+                let mut handle = stdin.lock();
+                handle.read_to_string(&mut buffer).unwrap();
+
+                let entries: Vec<String> = buffer.split_whitespace().map(String::from).collect();
+                entries
+            }
+            entries => entries.clone(),
+        }
+    }
 }
