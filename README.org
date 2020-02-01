@@ -29,19 +29,19 @@
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
-# A summary of what this module does.
+# A summary of what this project does.
 
 Random Ramble is a simple random words generator written in rust.
 
-It aims to generate a couple of words randomely based on parameters, such as
+It aims to generate a couple of words randomly based on parameters, such as
 starting patterns, themes etc.
 
-One of its (few) usecase is too generate a sprint name or a release name.
+One of its (few) usecase is to generate a sprint name or a release name.
 
 * Installation
 
 ** Building from sources
-To build from source, first, clone this repository.
+To build from source: first, clone this repository.
 
 *** Prerequisites
 Requires cargo 1.40 or newer
@@ -67,7 +67,7 @@ docker build -t random-ramble .
 ** SubCommands
 
 *** ~add~
-Adds an entry to a theme, or create a new theme
+Adds one or multiple entries to a theme or create a new one if the theme is not found.
 
 **** Examples
 ***** Add to an existing theme
@@ -84,7 +84,7 @@ rr add -a adjectives_fr Inutile
 #+END_SRC
 
 *** ~delete~
-Removes an entry from a theme
+Removes one or multiple entries from a theme.
 
 **** Aliases
 - ~remove~
@@ -137,9 +137,9 @@ OPTIONS:
             The length of the list to be returned [env: RR_NB_RESULT=]  [default: 10]
 
     -t, --themes <themes>...
-            A list of themes to be chosen from.
+            A list of themes to be chosen from
 
-            Themes preceded by '!' will be discarded
+            Themes preceded by '!' will be excluded
         --themes-path <themes-path>
             Path to the themes files [env: RR_THEMES_PATH=/home/daf/Projects/Rust/random-ramble/dict/themes]  [default:
             ./dict/themes]
@@ -156,14 +156,14 @@ SUBCOMMANDS:
 #+END_SRC
 
 * Configuration
-# How to configure this module, including common problems and how to address them.
+# How to configure this project, including common problems and how to address them.
 This project is configured via environment variables or by setting the desired
 values via the CLI.
 
 ** General
 
 *** number
-The number of results to be generated (default 10)
+The number of results to be generated.
 
 default value: 10
 
@@ -179,7 +179,7 @@ rr -n 25 [...]
 #+END_SRC
 
 *** themes path
-The path to the themes files
+The path to the themes files.
 
 default value: "./dict/themes"
 
@@ -196,7 +196,7 @@ rr --themes-path="~/.local/random_ramble/themes" [...]
 #+END_SRC
 
 *** adjectives path
-The path to the adjectives files
+The path to the adjectives files.
 
 default value: "./dict/adjectives"
 
@@ -215,7 +215,7 @@ rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
 
 * Examples
 ** Pattern - starts with
-Generates random words with default parameters, for words starting with 'A'
+Generates random words with default parameters, for words starting with 'A'.
 #+BEGIN_SRC bash
 rr a
 #+END_SRC
@@ -233,9 +233,9 @@ Aboriginal Amunet Black
 Able Aegeus
 #+END_SRC
 ** Specify a length
-Generates 3 random words with default parameters, for words starting with 'A'
+Generates 3 random words with default parameters, for words starting with 'A'.
 #+BEGIN_SRC bash
-rr A -l 3
+rr a -l 3
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -244,9 +244,9 @@ Abnormal Akron
 Angelic Alexander Anderson
 #+END_SRC
 ** Specify a theme
-Generates 3 random words of theme 'animals' with default parameters, for words starting with 'A'
+Generates 3 random words of theme 'animals' with default parameters, for words starting with 'A'.
 #+BEGIN_SRC bash
-rr A -l 3 --themes animals
+rr a -l 3 --themes animals
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -255,9 +255,9 @@ Apprehensive Anteater
 Alive Antelope
 #+END_SRC
 ** Exclude a theme
-Generates 3 random words of any available theme besides 'disney' with default parameters
+Generates 3 random words of any available theme besides 'disney' with default parameters.
 #+BEGIN_SRC bash
-rr A -l 3 --themes '!disney'
+rr a -l 3 --themes '!disney'
 #+END_SRC
 output:
 #+BEGIN_SRC bash
