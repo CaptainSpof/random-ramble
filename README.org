@@ -86,23 +86,25 @@ rr add -a adjectives_fr Inutile
 *** ~delete~
 Removes an entry from a theme
 
+**** Aliases
+- ~remove~
+- ~rm~
+- ~del~
+
 **** Examples
 ***** Remove from a theme
 #+BEGIN_SRC bash
-rr remove superheroes Batman
-# or 
 rr rm superheroes Batman
-# or 
-rr delete superheroes Batman
 #+END_SRC
 ***** Remove from a list in a file
 #+BEGIN_SRC sh
-rr remove superheroes < /tmp/heroes.txt
+rr rm superheroes < /tmp/heroes.txt
 #+END_SRC
 ***** Remove from adjectives
 #+BEGIN_SRC bash
-rr remove -a adjectives_fr Inutile
+rr rm -a adjectives_fr Inutile
 #+END_SRC
+
 * Usage
 #+BEGIN_SRC sh
 random-ramble 0.2.0
