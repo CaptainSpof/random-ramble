@@ -25,7 +25,7 @@
   - [[#pattern---starts-with][Pattern - starts with]]
   - [[#specify-a-length][Specify a length]]
   - [[#specify-a-theme][Specify a theme]]
-  - [[#discard-a-theme][Discard a theme]]
+  - [[#exclude-a-theme][Exclude a theme]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -217,7 +217,7 @@ rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
 ** Pattern - starts with
 Generates random words with default parameters, for words starting with 'A'
 #+BEGIN_SRC bash
-rr A
+rr a
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -254,7 +254,7 @@ Arrogant Aardvark
 Apprehensive Anteater
 Alive Antelope
 #+END_SRC
-** Discard a theme
+** Exclude a theme
 Generates 3 random words of any available theme besides 'disney' with default parameters
 #+BEGIN_SRC bash
 rr A -l 3 --themes '!disney'
