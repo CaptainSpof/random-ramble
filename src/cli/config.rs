@@ -25,9 +25,9 @@ pub struct Config {
     #[structopt(long, env = "RR_THEMES_PATH", default_value = "./dict/themes")]
     pub themes_path: PathBuf,
 
-    /// A list of themes to be chosen from.
+    /// A list of themes to be chosen from
     ///
-    /// Themes preceded by '!' will be discarded
+    /// Themes preceded by '!' will be excluded
     #[structopt(short, long)]
     pub themes: Option<Vec<String>>,
 
@@ -36,7 +36,7 @@ pub struct Config {
     pub adjectives_path: PathBuf,
 
     /// A list of adjectives to be chosen from
-    #[structopt(long, default_value = "adjectives_en")]
+    #[structopt(short, long, default_value = "adjectives_en")]
     pub adjectives: Vec<String>,
 
     /// The pattern to start with
