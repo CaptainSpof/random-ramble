@@ -39,6 +39,10 @@ pub struct Config {
     #[structopt(short, long, default_value = "adjectives_en")]
     pub adjectives: Vec<String>,
 
+    /// Provide a format from which to generate words
+    #[structopt(short, long)]
+    pub format: Option<String>,
+
     /// The pattern to start with
     pub pattern: Option<String>,
 

@@ -100,6 +100,33 @@ pub fn get_random_ramble(
         .collect()
 }
 
+pub fn get_random_ramble_with_format(
+    adjs_path: &PathBuf,
+    adjs: Vec<String>,
+    themes_path: &PathBuf,
+    themes: Option<Vec<String>>,
+    pattern: Option<&str>,
+    number: usize,
+    format: &str,
+) -> Vec<String> {
+    let adjs: Vec<_> = get_adjs(adjs_path, adjs, pattern);
+    let themes: Vec<_> = get_themes(themes_path, themes, pattern);
+
+    let adj_random_sel: Vec<_> = adjs
+        .choose_multiple(&mut rand::thread_rng(), number)
+        .collect();
+
+    let themes_random_sel: Vec<_> = themes
+        .choose_multiple(&mut rand::thread_rng(), number)
+        .collect();
+
+    adj_random_sel
+        .iter()
+        .zip(themes_random_sel.iter())
+        .map(|(a, (t, _))| format!("{} {}", a, t))
+        .collect()
+}
+
 pub fn get_random_ramble_with_provenance(
     adjs_path: &PathBuf,
     adjs: Vec<String>,
