@@ -7,15 +7,35 @@ use std::io::{prelude::*, BufReader};
 use std::path::PathBuf;
 use walkdir::WalkDir;
 
-fn get_adjs(adjs_path: &PathBuf, adjs: Vec<String>, pattern: Option<&str>) -> Vec<String> {
+fn get_adjs(adjs_path: &PathBuf, adjs: Option<Vec<String>>, pattern: Option<&str>) -> Vec<String> {
     WalkDir::new(adjs_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|metadata| metadata.file_type().is_file())
         .filter(|file| {
-            debug!("adj file: {:#?}", file);
-            adjs.contains(&file.file_name().to_str().unwrap().to_string())
+            debug!("adjective file: {:#?}", file);
+            match &adjs {
+                Some(sel_adjs) if sel_adjs.iter().any(|t| t.starts_with('!')) => {
+                    let excluded_adjs: Vec<_> = sel_adjs
+                        .iter()
+                        .filter(|t| t.starts_with('!'))
+                        .cloned()
+                        .collect();
+                    debug!("excluded adjectives {:?}", excluded_adjs);
+                    let a = format!("!{}", file.file_name().to_str().unwrap());
+                    !excluded_adjs.contains(&a)
+                }
+                Some(sel_themes) => {
+                    debug!("selected themes {:?}", sel_themes);
+                    sel_themes.contains(&file.file_name().to_str().unwrap().to_string())
+                }
+                None => true,
+            }
         })
+        // .filter(|file| {
+        //     debug!("adj file: {:#?}", file);
+        //     adjs.contains(&file.file_name().to_str().unwrap().to_string())
+        // })
         .flat_map(|f| {
             let file = std::fs::File::open(f.path()).expect("Unable to open file");
             let buf = BufReader::new(file);
@@ -43,14 +63,14 @@ fn get_themes(
             debug!("theme file: {:#?}", file);
             match &themes {
                 Some(sel_themes) if sel_themes.iter().any(|t| t.starts_with('!')) => {
-                    let discarded_themes: Vec<_> = sel_themes
+                    let excluded_themes: Vec<_> = sel_themes
                         .iter()
                         .filter(|t| t.starts_with('!'))
                         .cloned()
                         .collect();
-                    debug!("discarded_themes {:?}", discarded_themes);
+                    debug!("excluded themes {:?}", excluded_themes);
                     let t = format!("!{}", file.file_name().to_str().unwrap());
-                    !discarded_themes.contains(&t)
+                    !excluded_themes.contains(&t)
                 }
                 Some(sel_themes) => {
                     debug!("selected themes {:?}", sel_themes);
@@ -76,7 +96,7 @@ fn get_themes(
 
 pub fn get_random_ramble(
     adjs_path: &PathBuf,
-    adjs: Vec<String>,
+    adjs: Option<Vec<String>>,
     themes_path: &PathBuf,
     themes: Option<Vec<String>>,
     pattern: Option<&str>,
@@ -102,7 +122,7 @@ pub fn get_random_ramble(
 
 pub fn get_random_ramble_with_provenance(
     adjs_path: &PathBuf,
-    adjs: Vec<String>,
+    adjs: Option<Vec<String>>,
     themes_path: &PathBuf,
     themes: Option<Vec<String>>,
     starts_with: Option<&str>,

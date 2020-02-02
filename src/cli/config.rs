@@ -36,8 +36,8 @@ pub struct Config {
     pub adjectives_path: PathBuf,
 
     /// A list of adjectives to be chosen from
-    #[structopt(short, long, default_value = "adjectives_en")]
-    pub adjectives: Vec<String>,
+    #[structopt(short, long)]
+    pub adjectives: Option<Vec<String>>,
 
     /// The pattern to start with
     pub pattern: Option<String>,
