@@ -66,8 +66,11 @@ pub fn delete(theme_path: &PathBuf, theme: &str, entries: Vec<String>) {
             lines.retain(|l| !entries.contains(&l));
 
             if lines.len() > 0 {
-                debug!("new entries:\n{}", lines.join("\n"));
-                info!("deteting entries: {}", deleting.join(" "));
+                if deleting.len() > 0 {
+                    info!("deteting entries: {}", deleting.join(" "));
+                } else {
+                    warn!("nothing to delete")
+                }
                 // delete old file
                 drop(f);
 
