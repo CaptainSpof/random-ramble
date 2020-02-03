@@ -44,7 +44,7 @@ impl RandomRamble {
                     None => true,
                 }
             })
-            .map(|a| Type::new(adjs_path, &a))
+            .map(|a| Type::new(&a))
             .collect();
         let themes: Vec<Type> = WalkDir::new(themes_path)
             .into_iter()
@@ -70,14 +70,66 @@ impl RandomRamble {
                     None => true,
                 }
             })
-            .map(|a| Type::new(themes_path, &a))
+            .map(|a| Type::new(&a))
             .collect();
 
         Self { adjs, themes }
     }
+
+    pub fn randomize(&self, pattern: Option<&str>, number: usize) -> Vec<String> {
+        let adjs: Vec<_> = self.adjs.iter().flat_map(|a| a.entries(pattern)).collect();
+
+        let themes: Vec<_> = self
+            .themes
+            .iter()
+            .flat_map(|a| a.entries(pattern))
+            .collect();
+
+        let adj_random_sel: Vec<_> = adjs
+            .choose_multiple(&mut rand::thread_rng(), number)
+            .collect();
+
+        let themes_random_sel: Vec<_> = themes
+            .choose_multiple(&mut rand::thread_rng(), number)
+            .collect();
+
+        adj_random_sel
+            .iter()
+            .zip(themes_random_sel.iter())
+            .map(|(a, t)| format!("{} {}", a, t))
+            .collect()
+    }
+
+    pub fn randomize_with_details(&self, pattern: Option<&str>, number: usize) -> Vec<String> {
+        let adjs: Vec<(_, _)> = self
+            .adjs
+            .iter()
+            .flat_map(|a| a.entries(pattern).into_iter().map(move |e| (e, &a.name)))
+            .collect();
+
+        let themes: Vec<_> = self
+            .themes
+            .iter()
+            .flat_map(|t| t.entries(pattern).into_iter().map(move |e| (e, &t.name)))
+            .collect();
+
+        let adj_random_sel: Vec<_> = adjs
+            .choose_multiple(&mut rand::thread_rng(), number)
+            .collect();
+
+        let themes_random_sel: Vec<_> = themes
+            .choose_multiple(&mut rand::thread_rng(), number)
+            .collect();
+
+        adj_random_sel
+            .iter()
+            .zip(themes_random_sel.iter())
+            .map(|((a, ap), (t, tp))| format!("[{} | {:^12}]\t{} {}", ap, tp, a, t))
+            .collect()
+    }
 }
 
-enum EntryType {
+enum _EntryType {
     Adjective(Type),
     Theme(Type),
 }
@@ -94,147 +146,39 @@ struct Type {
 }
 
 impl Type {
-    pub fn new(_path: &PathBuf, file: &DirEntry) -> Self {
+    pub fn new(file: &DirEntry) -> Self {
+        let f = std::fs::File::open(file.path()).expect("Unable to open file");
+        let buf = BufReader::new(f);
+        let entries = buf
+            .lines()
+            .map(|l| l.expect("Could not parse line"))
+            .collect::<Vec<String>>();
+
         Self {
             // provenance: "foo".to_owned(),
             name: file.file_name().to_str().expect("FIX ME").to_owned(),
             path: file.path().to_str().expect("FIX ME").to_owned(),
-            entries: vec![],
+            entries,
         }
     }
-}
 
-fn get_adjs(adjs_path: &PathBuf, adjs: Option<Vec<String>>, pattern: Option<&str>) -> Vec<String> {
-    WalkDir::new(adjs_path)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|metadata| metadata.file_type().is_file())
-        .filter(|file| {
-            debug!("adjective file: {:#?}", file);
-            match &adjs {
-                Some(sel_adjs) if sel_adjs.iter().any(|t| t.starts_with('!')) => {
-                    let excluded_adjs: Vec<_> = sel_adjs
-                        .iter()
-                        .filter(|t| t.starts_with('!'))
-                        .cloned()
-                        .collect();
-                    debug!("excluded adjectives {:?}", excluded_adjs);
-                    let a = format!("!{}", file.file_name().to_str().unwrap());
-                    !excluded_adjs.contains(&a)
-                }
-                Some(sel_themes) => {
-                    debug!("selected themes {:?}", sel_themes);
-                    sel_themes.contains(&file.file_name().to_str().unwrap().to_string())
-                }
+    fn _populate_entries(&mut self) {
+        let file = std::fs::File::open(&self.path).expect("Unable to open file");
+        let buf = BufReader::new(file);
+        self.entries = buf
+            .lines()
+            .map(|l| l.expect("Could not parse line"))
+            .collect::<Vec<String>>()
+    }
+
+    pub fn entries(&self, pattern: Option<&str>) -> Vec<String> {
+        self.entries
+            .iter()
+            .filter(|e| match pattern {
+                Some(ref p) => e.to_lowercase().starts_with(&p.to_lowercase()),
                 None => true,
-            }
-        })
-        .flat_map(|f| {
-            let file = std::fs::File::open(f.path()).expect("Unable to open file");
-            let buf = BufReader::new(file);
-            buf.lines()
-                .map(|l| l.expect("Could not parse line"))
-                .filter(|l| match pattern {
-                    Some(ref p) => l.to_lowercase().starts_with(&p.to_lowercase()),
-                    None => true,
-                })
-                .collect::<Vec<String>>()
-        })
-        .collect()
-}
-
-fn get_themes(
-    themes_path: &PathBuf,
-    themes: Option<Vec<String>>,
-    pattern: Option<&str>,
-) -> Vec<(String, String)> {
-    WalkDir::new(&themes_path)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|metadata| metadata.file_type().is_file())
-        .filter(|file| {
-            debug!("theme file: {:#?}", file);
-            match &themes {
-                Some(sel_themes) if sel_themes.iter().any(|t| t.starts_with('!')) => {
-                    let excluded_themes: Vec<_> = sel_themes
-                        .iter()
-                        .filter(|t| t.starts_with('!'))
-                        .cloned()
-                        .collect();
-                    debug!("excluded themes {:?}", excluded_themes);
-                    let t = format!("!{}", file.file_name().to_str().unwrap());
-                    !excluded_themes.contains(&t)
-                }
-                Some(sel_themes) => {
-                    debug!("selected themes {:?}", sel_themes);
-                    sel_themes.contains(&file.file_name().to_str().unwrap().to_string())
-                }
-                None => true,
-            }
-        })
-        .flat_map(|f| {
-            let file = std::fs::File::open(f.path()).expect("Unable to open file");
-            let file_name = f.file_name().to_str().unwrap();
-            let buf = BufReader::new(file);
-            buf.lines()
-                .map(|l| (l.expect("Could not parse line"), file_name.to_string()))
-                .filter(|(l, _)| match pattern {
-                    Some(ref p) => l.to_lowercase().starts_with(&p.to_lowercase()),
-                    None => true,
-                })
-                .collect::<Vec<(String, String)>>()
-        })
-        .collect()
-}
-
-pub fn get_random_ramble(
-    adjs_path: &PathBuf,
-    adjs: Option<Vec<String>>,
-    themes_path: &PathBuf,
-    themes: Option<Vec<String>>,
-    pattern: Option<&str>,
-    number: usize,
-) -> Vec<String> {
-    let adjs: Vec<_> = get_adjs(adjs_path, adjs, pattern);
-    let themes: Vec<_> = get_themes(themes_path, themes, pattern);
-
-    let adj_random_sel: Vec<_> = adjs
-        .choose_multiple(&mut rand::thread_rng(), number)
-        .collect();
-
-    let themes_random_sel: Vec<_> = themes
-        .choose_multiple(&mut rand::thread_rng(), number)
-        .collect();
-
-    adj_random_sel
-        .iter()
-        .zip(themes_random_sel.iter())
-        .map(|(a, (t, _))| format!("{} {}", a, t))
-        .collect()
-}
-
-pub fn get_random_ramble_with_provenance(
-    adjs_path: &PathBuf,
-    adjs: Option<Vec<String>>,
-    themes_path: &PathBuf,
-    themes: Option<Vec<String>>,
-    starts_with: Option<&str>,
-    number: usize,
-) -> Vec<String> {
-    let adjs: Vec<_> = get_adjs(adjs_path, adjs, starts_with);
-    let themes: Vec<_> = get_themes(themes_path, themes, starts_with);
-
-    let adj_random_sel: Vec<_> = adjs
-        .choose_multiple(&mut rand::thread_rng(), number)
-        .collect();
-
-    let themes_random_sel: Vec<_> = themes
-        .choose_multiple(&mut rand::thread_rng(), number)
-        .collect();
-
-    adj_random_sel
-        .iter()
-        .zip(themes_random_sel.iter())
-        .map(|(a, (t, p))| format!("[{:^15}]\t{} {}", p, a, t))
-        .collect()
+            })
+            .cloned()
+            .collect::<Vec<String>>()
+    }
 }
