@@ -54,9 +54,7 @@ pub enum Command {
     /// Add entries to a theme, or create a new theme
     Add(Edit),
     /// Delete entries from a theme, or create a new theme
-    ///
-    /// Available aliases: [remove, del, rm]
-    #[structopt(aliases = &["remove", "del", "rm"])]
+    #[structopt(visible_aliases = &["remove", "del"])]
     Delete(Edit),
 }
 
