@@ -35,7 +35,7 @@ impl RandomRamble {
                             .collect();
                         debug!("excluded adjectives {:?}", excluded_adjs);
                         let adj_name = format!("!{}", file.file_name().to_str().unwrap());
-                        if excluded_adjs.len() > 0 {
+                        if !excluded_adjs.is_empty() {
                             !excluded_adjs.contains(&adj_name)
                         } else {
                             sel_adjs.contains(&file.file_name().to_str().unwrap().to_string())
@@ -61,7 +61,7 @@ impl RandomRamble {
                             .collect();
                         debug!("excluded themes {:?}", excluded_themes);
                         let theme_name = format!("!{}", file.file_name().to_str().unwrap());
-                        if excluded_themes.len() > 0 {
+                        if !excluded_themes.is_empty() {
                             !excluded_themes.contains(&theme_name)
                         } else {
                             sel_themes.contains(&file.file_name().to_str().unwrap().to_string())
