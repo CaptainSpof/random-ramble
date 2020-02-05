@@ -10,12 +10,19 @@ mod cmds;
 mod config;
 
 use config::{Command, Config};
-use random_ramble::{get_random_ramble, get_random_ramble_with_provenance};
+use random_ramble::RandomRamble;
 
 fn main() {
     let config: Config = Config::from_args();
     init_logger(config.verbose);
     debug!("config: {:#?}", config);
+
+    let rr = RandomRamble::new(
+        &config.adjectives_path,
+        config.adjectives.clone(),
+        &config.themes_path,
+        config.themes.clone(),
+    );
 
     match config.cmd {
         Some(Command::Add(c)) => {
@@ -34,22 +41,8 @@ fn main() {
         }
         None => {
             let res = match config.verbose {
-                v if v < 1 => get_random_ramble(
-                    &config.adjectives_path,
-                    config.adjectives,
-                    &config.themes_path,
-                    config.themes,
-                    config.pattern.as_deref(),
-                    config.number,
-                ),
-                _ => get_random_ramble_with_provenance(
-                    &config.adjectives_path,
-                    config.adjectives,
-                    &config.themes_path,
-                    config.themes,
-                    config.pattern.as_deref(),
-                    config.number,
-                ),
+                v if v < 1 => rr.randomize(config.pattern.as_deref(), config.number),
+                _ => rr.randomize_with_details(config.pattern.as_deref(), config.number),
             };
 
             for r in res {

@@ -36,8 +36,8 @@ pub struct Config {
     pub adjectives_path: PathBuf,
 
     /// A list of adjectives to be chosen from
-    #[structopt(short, long, default_value = "adjectives_en")]
-    pub adjectives: Vec<String>,
+    #[structopt(short, long)]
+    pub adjectives: Option<Vec<String>>,
 
     /// Provide a format from which to generate words
     #[structopt(short, long)]
@@ -58,9 +58,7 @@ pub enum Command {
     /// Add entries to a theme, or create a new theme
     Add(Edit),
     /// Delete entries from a theme, or create a new theme
-    ///
-    /// Available aliases: [remove, del, rm]
-    #[structopt(aliases = &["remove", "del", "rm"])]
+    #[structopt(visible_aliases = &["remove", "del"])]
     Delete(Edit),
 }
 

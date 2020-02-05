@@ -1,5 +1,5 @@
-use std::fs::OpenOptions;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::{prelude::*, BufReader};
 use std::path::PathBuf;
 
@@ -28,7 +28,7 @@ pub fn add(theme_path: &PathBuf, theme: &str, entries: Vec<String>) {
                 .cloned()
                 .collect();
 
-            if missing.len() > 0 {
+            if !missing.is_empty() {
                 info!("adding entries: {}", missing.join(" "));
                 writeln!(f, "{}", missing.join("\n")).expect("oh shit");
             } else {
@@ -65,9 +65,12 @@ pub fn delete(theme_path: &PathBuf, theme: &str, entries: Vec<String>) {
 
             lines.retain(|l| !entries.contains(&l));
 
-            if lines.len() > 0 {
-                debug!("new entries:\n{}", lines.join("\n"));
-                info!("deteting entries: {}", deleting.join(" "));
+            if !lines.is_empty() {
+                if !deleting.is_empty() {
+                    info!("deteting entries: {}", deleting.join(" "));
+                } else {
+                    warn!("nothing to delete")
+                }
                 // delete old file
                 drop(f);
 
