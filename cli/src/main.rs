@@ -41,8 +41,8 @@ fn main() {
         }
         None => {
             let res = match config.verbose {
-                v if v < 1 => rr.randomize(config.pattern.as_deref(), config.number),
-                _ => rr.randomize_with_details(config.pattern.as_deref(), config.number),
+                v if v < 1 => rr.randomize(config.pattern.as_deref(), config.number, config.template.as_deref()),
+                _ => rr.randomize_with_details(config.pattern.as_deref(), config.number, config.template.as_deref()),
             };
 
             for r in res {

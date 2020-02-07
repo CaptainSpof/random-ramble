@@ -39,9 +39,9 @@ pub struct Config {
     #[structopt(short, long)]
     pub adjectives: Option<Vec<String>>,
 
-    /// Provide a format from which to generate words
-    #[structopt(short, long)]
-    pub format: Option<String>,
+    /// Provide a template from which to generate words
+    #[structopt(long)]
+    pub template: Option<String>,
 
     /// The pattern to start with
     pub pattern: Option<String>,

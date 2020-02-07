@@ -76,7 +76,7 @@ impl RandomRamble {
         Self { adjs, themes }
     }
 
-    pub fn randomize(&self, pattern: Option<&str>, number: usize) -> Vec<String> {
+    pub fn randomize(&self, pattern: Option<&str>, number: usize, template: Option<&str>) -> Vec<String> {
         let adjs: Vec<_> = self.adjs.iter().flat_map(|a| a.entries(pattern)).collect();
 
         let themes: Vec<_> = self
@@ -100,7 +100,7 @@ impl RandomRamble {
             .collect()
     }
 
-    pub fn randomize_with_details(&self, pattern: Option<&str>, number: usize) -> Vec<String> {
+    pub fn randomize_with_details(&self, pattern: Option<&str>, number: usize, template: Option<&str>) -> Vec<String> {
         let adjs: Vec<(_, _)> = self
             .adjs
             .iter()
