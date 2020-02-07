@@ -1,8 +1,12 @@
 #[macro_use]
 extern crate log;
 
-use rand::seq::SliceRandom;
+use serde::{Deserialize, Serialize};
 
+use rand::seq::SliceRandom;
+use tera::{Context, Tera};
+
+use std::collections::HashMap;
 use std::io::{prelude::*, BufReader};
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
@@ -76,7 +80,7 @@ impl RandomRamble {
         Self { adjs, themes }
     }
 
-    pub fn randomize(&self, pattern: Option<&str>, number: usize, template: Option<&str>) -> Vec<String> {
+    pub fn randomize(&self, pattern: Option<&str>, number: usize) -> Vec<String> {
         let adjs: Vec<_> = self.adjs.iter().flat_map(|a| a.entries(pattern)).collect();
 
         let themes: Vec<_> = self
@@ -100,33 +104,98 @@ impl RandomRamble {
             .collect()
     }
 
-    pub fn randomize_with_details(&self, pattern: Option<&str>, number: usize, template: Option<&str>) -> Vec<String> {
+
+
+    pub fn randomize_with_details(
+        &self,
+        pattern: Option<&str>,
+        number: usize,
+        template: Option<&str>,
+    ) -> Vec<String> {
         let adjs: Vec<(_, _)> = self
             .adjs
             .iter()
-            .flat_map(|a| a.entries(pattern).into_iter().map(move |e| (e, &a.name)))
+            .flat_map(|a| a.entries(pattern).into_iter().map(move |e| (&a.name, e)))
             .collect();
 
-        let themes: Vec<_> = self
+        let themes: Vec<(_, _)> = self
             .themes
             .iter()
-            .flat_map(|t| t.entries(pattern).into_iter().map(move |e| (e, &t.name)))
+            .flat_map(|t| t.entries(pattern).into_iter().map(move |e| (&t.name, e)))
             .collect();
 
         let adj_random_sel: Vec<_> = adjs
             .choose_multiple(&mut rand::thread_rng(), number)
+            .map(|a| a.to_owned())
             .collect();
+
+        // let adj_random_sel: Vec<_> = adjs
+        //     .choose_multiple(&mut rand::thread_rng(), number)
+        //     .collect();
 
         let themes_random_sel: Vec<_> = themes
             .choose_multiple(&mut rand::thread_rng(), number)
+            .map(|e| e.to_owned())
             .collect();
 
-        adj_random_sel
-            .iter()
-            .zip(themes_random_sel.iter())
-            .map(|((a, ap), (t, tp))| format!("[{} | {:^12}]\t{} {}", ap, tp, a, t))
-            .collect()
+        // let themes_random_sel: Vec<_> = themes
+        //     .choose_multiple(&mut rand::thread_rng(), number)
+        //     .collect();
+
+        match template {
+            Some(template) => {
+                // let mut adjs: HashMap<_, _> = adj_random_sel.clone().into_iter().collect();
+                // let mut adjs: std::collections::BTreeMap<_, _> = adj_random_sel.clone().into_iter().collect();
+                let mut themes: HashMap<_, _> = themes_random_sel.clone().into_iter().collect();
+
+                let mut adjs_m = HashMap::new();
+                for (k, v) in &adjs {
+                    adjs_m.entry(k).or_insert_with(Vec::new).push(v)
+                }
+
+
+                println!("{:?}", adjs_m);
+                // println!("{:?}", m);
+
+                let mut context = Context::new();
+                context.insert("adjs", &adjs_m);
+                context.insert("themes", &themes);
+
+                (0..number).map(|x| {
+                        Tera::one_off(template, &context, true).unwrap()
+                }).collect()
+
+                // let r = adj_random_sel
+                //     .iter()
+                //     .zip(themes_random_sel.iter())
+                //     .map(|((_ap, a), (_tp, t))| {
+                //         // let mut flat_context = Context::new();
+                //         context.insert("adj", &a);
+                //         context.insert("theme", &t);
+
+                //         // context.extend(flat_context);
+
+                //         Tera::one_off(template, &context, true).unwrap()
+                //     })
+                //     .collect();
+
+                // r
+
+                // vec![]
+            }
+            None => adj_random_sel
+                .iter()
+                .zip(themes_random_sel.iter())
+                .map(|((ap, a), (tp, t))| format!("[{} | {:^12}]\t{} {}", ap, tp, a, t))
+                .collect(),
+        }
     }
+}
+
+#[derive(Serialize)]
+struct Adj {
+    name: String,
+    content: String
 }
 
 enum _EntryType {
