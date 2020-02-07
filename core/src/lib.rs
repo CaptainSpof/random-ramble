@@ -104,8 +104,6 @@ impl RandomRamble {
             .collect()
     }
 
-
-
     pub fn randomize_with_details(
         &self,
         pattern: Option<&str>,
@@ -146,7 +144,12 @@ impl RandomRamble {
             Some(template) => {
                 // let mut adjs: HashMap<_, _> = adj_random_sel.clone().into_iter().collect();
                 // let mut adjs: std::collections::BTreeMap<_, _> = adj_random_sel.clone().into_iter().collect();
-                let mut themes: HashMap<_, _> = themes_random_sel.clone().into_iter().collect();
+                // let mut themes: HashMap<_, _> = themes_random_sel.clone().into_iter().collect();
+
+                let mut themes_m = HashMap::new();
+                for (k, v) in &themes {
+                    themes_m.entry(k).or_insert_with(Vec::new).push(v)
+                }
 
                 let mut adjs_m = HashMap::new();
                 for (k, v) in &adjs {
@@ -154,16 +157,29 @@ impl RandomRamble {
                 }
 
 
-                println!("{:?}", adjs_m);
+                // println!("{:?}", aa);
                 // println!("{:?}", m);
 
-                let mut context = Context::new();
-                context.insert("adjs", &adjs_m);
-                context.insert("themes", &themes);
 
-                (0..number).map(|x| {
+                (0..number)
+                    .map(|x| {
+                        let aa: HashMap<_, Vec<_>> = adjs_m
+                            .clone()
+                            .into_iter()
+                            .map(|(k, v)| (k.clone(), v.clone().choose_multiple(&mut rand::thread_rng(), number).map(|e| e.to_owned()).collect()))
+                            .collect();
+                        let tt: HashMap<_, Vec<_>> = themes_m
+                            .clone()
+                            .into_iter()
+                            .map(|(k, v)| (k.clone(), v.clone().choose_multiple(&mut rand::thread_rng(), number).map(|e| e.to_owned()).collect()))
+                            .collect();
+
+                        let mut context = Context::new();
+                        context.insert("adjs", &aa);
+                        context.insert("themes", &tt);
                         Tera::one_off(template, &context, true).unwrap()
-                }).collect()
+                    })
+                    .collect()
 
                 // let r = adj_random_sel
                 //     .iter()
@@ -195,7 +211,7 @@ impl RandomRamble {
 #[derive(Serialize)]
 struct Adj {
     name: String,
-    content: String
+    content: String,
 }
 
 enum _EntryType {
