@@ -17,12 +17,21 @@ fn main() {
     init_logger(config.verbose);
     debug!("config: {:#?}", config);
 
-    let rr = RandomRamble::new(
+    let rr = match RandomRamble::new(
         &config.adjectives_path,
-        config.adjectives.clone(),
+        config.adjectives,
+        // config.adjectives.as_deref(),
         &config.themes_path,
-        config.themes.clone(),
-    );
+        config.themes,
+    ) {
+        Ok(rr) => rr,
+        Err(e) => {
+            eprintln!("Crote, une erreur: {:#?}", e);
+            std::process::exit(1);
+        }
+    };
+
+
 
     match config.cmd {
         Some(Command::Add(c)) => {
@@ -40,7 +49,7 @@ fn main() {
             }
         }
         None => {
-            let res = match config.verbose {
+            let ramble = match config.verbose {
                 v if v < 1 => rr.randomize(
                     config.pattern.as_deref(),
                     config.number,
@@ -53,8 +62,16 @@ fn main() {
                 ),
             };
 
-            for r in res {
-                println!("{}", r);
+            match ramble {
+                Ok(ramble) => {
+                    for r in ramble {
+                        println!("{}", r);
+                    }
+                }
+                Err(e) => {
+                    eprint!("Zut ! {}", e);
+                    std::process::exit(1);
+                }
             }
         }
     };
