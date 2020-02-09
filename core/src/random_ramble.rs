@@ -1,6 +1,7 @@
 use rand::seq::SliceRandom;
 use regex::Regex;
 use serde::Serialize;
+use std::error::Error as stdError;
 use tera::{Context, Tera};
 
 use std::collections::{BTreeMap, HashMap};
@@ -185,13 +186,18 @@ impl RandomRamble {
                         if re_themes.is_match(template) {
                             context.insert("themes", &themes);
                         }
-                        Tera::one_off(template, &context, true)
+                        match Tera::one_off(template, &context, true) {
+                            Ok(r) => Ok(r),
+                            Err(e) => {
+                                warn!("{:#?}, skipping", e.source().unwrap().to_string());
+                                Err(e)
+                            }
+                        }
                     })
                     .filter_map(Result::ok)
                     .collect();
 
                 Ok(results)
-                // results
             }
             None => {
                 let (adjs, themes): (Vec<_>, Vec<_>) = match pattern {
@@ -200,16 +206,16 @@ impl RandomRamble {
                             .iter()
                             .filter(|a| {
                                 a.entries
-                                 .iter()
-                                 .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
+                                    .iter()
+                                    .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
                             })
                             .collect(),
                         self.themes
                             .iter()
                             .filter(|a| {
                                 a.entries
-                                 .iter()
-                                 .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
+                                    .iter()
+                                    .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
                             })
                             .collect(),
                     ),
@@ -218,22 +224,20 @@ impl RandomRamble {
 
                 Ok((0..number)
                     .map(|_| {
-                        let adj = match adjs
-                            .choose(&mut rand::thread_rng()) {
-                                Some(a) => a.random_entry(pattern)?,
-                                None => {
-                                    warn!(r#"couldn't get random adjectives entries"#);
-                                    bail!(r#"'chier"#)
-                                }
-                            };
-                        let theme = match themes
-                            .choose(&mut rand::thread_rng()) {
-                                Some(t) => t.random_entry(pattern)?,
-                                None => {
-                                    warn!("couldn't get random themes entries");
-                                    bail!("'chier")
-                                }
-                            };
+                        let adj = match adjs.choose(&mut rand::thread_rng()) {
+                            Some(a) => a.random_entry(pattern)?,
+                            None => {
+                                warn!(r#"couldn't get random adjectives entries"#);
+                                bail!(r#"'chier"#)
+                            }
+                        };
+                        let theme = match themes.choose(&mut rand::thread_rng()) {
+                            Some(t) => t.random_entry(pattern)?,
+                            None => {
+                                warn!("couldn't get random themes entries");
+                                bail!("'chier")
+                            }
+                        };
                         Ok(format!("{} {}", adj, theme))
                     })
                     .filter_map(Result::ok)
@@ -274,35 +278,35 @@ impl RandomRamble {
 
                 let mut context = Context::new();
                 Ok((0..number)
-                   .map(|_| {
-                       let aa: HashMap<_, Vec<_>> = adjs_m
-                           .iter()
-                           .map(|(k, v)| {
-                               (
-                                   k,
-                                   v.choose_multiple(&mut rand::thread_rng(), number)
-                                    .map(|e| e.to_owned())
-                                    .collect(),
-                               )
-                           })
-                           .collect();
-                       let tt: HashMap<_, Vec<_>> = themes_m
-                           .iter()
-                           .map(|(k, v)| {
-                               (
-                                   k,
-                                   v.choose_multiple(&mut rand::thread_rng(), number)
-                                    .map(|e| e.to_owned())
-                                    .collect(),
-                               )
-                           })
-                           .collect();
+                    .map(|_| {
+                        let aa: HashMap<_, Vec<_>> = adjs_m
+                            .iter()
+                            .map(|(k, v)| {
+                                (
+                                    k,
+                                    v.choose_multiple(&mut rand::thread_rng(), number)
+                                        .map(|e| e.to_owned())
+                                        .collect(),
+                                )
+                            })
+                            .collect();
+                        let tt: HashMap<_, Vec<_>> = themes_m
+                            .iter()
+                            .map(|(k, v)| {
+                                (
+                                    k,
+                                    v.choose_multiple(&mut rand::thread_rng(), number)
+                                        .map(|e| e.to_owned())
+                                        .collect(),
+                                )
+                            })
+                            .collect();
 
-                       context.insert("adjs", &aa);
-                       context.insert("themes", &tt);
-                       Tera::one_off(template, &context, true).unwrap()
-                   })
-                   .collect())
+                        context.insert("adjs", &aa);
+                        context.insert("themes", &tt);
+                        Tera::one_off(template, &context, true).unwrap()
+                    })
+                    .collect())
             }
             None => {
                 let adj_random_sel: Vec<_> = adjs
@@ -316,10 +320,10 @@ impl RandomRamble {
                     .collect();
 
                 Ok(adj_random_sel
-                   .iter()
-                   .zip(themes_random_sel.iter())
-                   .map(|((ap, a), (tp, t))| format!("[{} | {:^12}]\t{} {}", ap, tp, a, t))
-                   .collect())
+                    .iter()
+                    .zip(themes_random_sel.iter())
+                    .map(|((ap, a), (tp, t))| format!("[{} | {:^12}]\t{} {}", ap, tp, a, t))
+                    .collect())
             }
         }
     }
