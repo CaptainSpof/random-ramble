@@ -40,7 +40,7 @@ pub struct Config {
     pub adjectives: Option<Vec<String>>,
 
     /// Provide a template from which to generate words
-    #[structopt(long)]
+    #[structopt(short = "T", long)]
     pub template: Option<String>,
 
     /// The pattern to start with
