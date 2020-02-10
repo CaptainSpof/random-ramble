@@ -240,7 +240,7 @@ impl RandomRamble {
                             }
                         };
                         if with_details {
-                            Ok(format!("[{:^12} | {:^12}]\t\t{} {}", adj_name, theme_name, adj, theme))
+                            Ok(format!("[ {:^12} | {:^12} ]\t\t{} {}", adj_name, theme_name, adj, theme))
                         } else {
                             Ok(format!("{} {}", adj, theme))
                         }

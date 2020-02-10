@@ -89,13 +89,13 @@ This allow multiple features:
 
   Allow you to limit the categorie of either ~adj~ or ~theme~
   #+BEGIN_SRC sh
-{{ adjs.en.0 }} {{ themes.superheroes.0 }}
+{{ adjs.en.0 }} {{ themes.superhero.0 }}
   #+END_SRC
 - filter the output
 
   You can apply a filter to the output:
   #+BEGIN_SRC sh
-{{ adj | title }} {{ themes.superheroes.0 | upper }}
+{{ adj | title }} {{ themes.superhero.0 | upper }}
   #+END_SRC
 
 *** Limitations
@@ -103,7 +103,7 @@ This allow multiple features:
 **** objects need to have an index
 field in the dot notation need an index .i.e:
 #+BEGIN_SRC jinja2
-{{ themes.superheroes.0 }} {{ themes.superheroes.1 }}
+{{ themes.superhero.0 }} {{ themes.superhero.1 }}
 #+END_SRC
 
 ** SubCommands
@@ -114,11 +114,11 @@ Add one or multiple entries to a theme or create a new one if the theme is not f
 **** Examples
 ***** Add to an existing theme
 #+BEGIN_SRC bash
-rr add superheroes Batman
+rr add superhero Batman
 #+END_SRC
 ***** Add from a list in a file
 #+BEGIN_SRC sh
-rr add superheroes < /tmp/heroes.txt
+rr add superhero < /tmp/heroes.txt
 #+END_SRC
 ***** Add to an adjective
 #+BEGIN_SRC bash
@@ -135,11 +135,11 @@ Remove one or multiple entries from a theme.
 **** Examples
 ***** Remove from a theme
 #+BEGIN_SRC bash
-rr del superheroes Batman
+rr del superhero Batman
 #+END_SRC
 ***** Remove from a list in a file
 #+BEGIN_SRC sh
-rr del superheroes < /tmp/heroes.txt
+rr del superhero < /tmp/heroes.txt
 #+END_SRC
 ***** Remove from an adjective
 #+BEGIN_SRC bash
@@ -290,7 +290,7 @@ Angelic Alexander Anderson
 ** Specify a theme
 Generate 3 random words of theme 'animals' with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
-rr a -n 3 --themes animals
+rr a -n 3 --themes animal
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -312,7 +312,7 @@ Resourceful Magpie
 ** Specify a template
 Generate a template with random entries:
 #+BEGIN_SRC sh
-rr -T '{{ themes.boyname.0 }}, the {{adjs.superlative.0 | lower }} {{ adj | lower }} {{ themes.color.0 | lower }} {{ themes.videogame.0 }}' -n 4
+rr -T '{{ themes.male_name.0 }}, the {{adjs.superlative.0 | lower }} {{ adj | lower }} {{ themes.color.0 | lower }} {{ themes.videogame.0 }}' -n 4
 #+END_SRC
 output:
 #+BEGIN_SRC sh
