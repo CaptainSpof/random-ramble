@@ -28,7 +28,7 @@
   - [[#specify-a-length][Specify a length]]
   - [[#specify-a-theme][Specify a theme]]
   - [[#exclude-a-theme][Exclude a theme]]
-  - [[#template-1][Template]]
+  - [[#specify-a-template][Specify a template]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -72,9 +72,9 @@ docker build -t random-ramble .
 
 ** Template
 By default, ~random-ramble~ will generate a couple of adjective and theme. It is
-however possible to specify a template ( ~ -T '<template>' ~ )
+however possible to specify a manual template.
 
-The template follow the ~tera~ notation (which is inspired from Jinja2)
+The template follow the ~tera~ notation (which is inspired by Jinja2)
 
 this allow multiple features:
 - random entry from all themes / adjs
@@ -309,7 +309,7 @@ Ambitious Dogfish
 Stormy Fironic
 Resourceful Magpie
 #+END_SRC
-** Template
+** Specify a template
 Generates a template with random entries:
 #+BEGIN_SRC sh
 rr a -T '{{ themes.boyname.0 }}, the {{adjs.superlative.0 | lower }} {{ themes.color.0 | lower }} {{ theme }}' -n 3
