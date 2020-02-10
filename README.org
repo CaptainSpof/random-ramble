@@ -107,7 +107,7 @@ rr rm -a adjectives_fr Inutile
 
 * Usage
 #+BEGIN_SRC sh
-random-ramble 0.2.0
+random-ramble 0.3.0
 Cédric Da Fonseca <dafonseca.cedric@gmail.com>
 A simple random words generator
 
@@ -127,14 +127,17 @@ FLAGS:
             -vvv:	INFO|WARN|ERROR|DEBUG|TRACE
 
 OPTIONS:
-        --adjectives <adjectives>...
-            A list of adjectives to be chosen from [default: adjectives_en]
+    -a, --adjectives <adjectives>...
+            A list of adjectives to be chosen from
 
         --adjectives-path <adjectives-path>
             Path to the adjectives files [env: RR_ADJS_PATH=/home/daf/Projects/Rust/random-ramble/dict/adjectives]
             [default: ./dict/adjectives]
     -n <number>
             The length of the list to be returned [env: RR_NB_RESULT=]  [default: 10]
+
+    -T, --template <template>
+            Provide a template from which to generate words
 
     -t, --themes <themes>...
             A list of themes to be chosen from
@@ -151,7 +154,7 @@ ARGS:
 
 SUBCOMMANDS:
     add       Add entries to a theme, or create a new theme
-    delete    Delete entries from a theme, or create a new theme
+    delete    Delete entries from a theme, or create a new theme [aliases: remove, del]
     help      Prints this message or the help of the given subcommand(s)
 #+END_SRC
 
