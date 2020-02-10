@@ -49,18 +49,12 @@ fn main() {
             }
         }
         None => {
-            let ramble = match config.verbose {
-                v if v < 1 => rr.randomize(
+            // let ramble = match config.verbose {
+            let ramble = rr.randomize(
                     config.pattern.as_deref(),
                     config.number,
                     config.template.as_deref(),
-                ),
-                _ => rr.randomize_with_details(
-                    config.pattern.as_deref(),
-                    config.number,
-                    config.template.as_deref(),
-                ),
-            };
+                    config.verbose < 3);
 
             match ramble {
                 Ok(ramble) => {

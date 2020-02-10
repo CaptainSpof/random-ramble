@@ -108,6 +108,7 @@ impl RandomRamble {
         pattern: Option<&str>,
         number: usize,
         template: Option<&str>,
+        with_details: bool,
     ) -> Result<Vec<String>, Error> {
         let re_adjs = Regex::new(r"adjs").expect("this shouldn't fail");
         let re_themes = Regex::new(r"themes").expect("this shouldn't fail");
@@ -224,105 +225,27 @@ impl RandomRamble {
 
                 Ok((0..number)
                     .map(|_| {
-                        let adj = match adjs.choose(&mut rand::thread_rng()) {
-                            Some(a) => a.random_entry(pattern)?,
+                        let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
+                            Some(a) => (&a.name, a.random_entry(pattern)?),
                             None => {
                                 warn!(r#"couldn't get random adjectives entries"#);
                                 bail!(r#"'chier"#)
                             }
                         };
-                        let theme = match themes.choose(&mut rand::thread_rng()) {
-                            Some(t) => t.random_entry(pattern)?,
+                        let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
+                            Some(t) => (&t.name, t.random_entry(pattern)?),
                             None => {
                                 warn!("couldn't get random themes entries");
                                 bail!("'chier")
                             }
                         };
-                        Ok(format!("{} {}", adj, theme))
+                        if with_details {
+                            Ok(format!("[{:^12} | {:^12}]\t\t{} {}", adj_name, theme_name, adj, theme))
+                        } else {
+                            Ok(format!("{} {}", adj, theme))
+                        }
                     })
                     .filter_map(Result::ok)
-                    .collect())
-            }
-        }
-    }
-
-    pub fn randomize_with_details(
-        &self,
-        pattern: Option<&str>,
-        number: usize,
-        template: Option<&str>,
-    ) -> Result<Vec<String>, Error> {
-        let adjs: Vec<(_, _)> = self
-            .adjs
-            .iter()
-            .flat_map(|a| a.entries(pattern).into_iter().map(move |e| (&a.name, e)))
-            .collect();
-
-        let themes: Vec<(_, _)> = self
-            .themes
-            .iter()
-            .flat_map(|t| t.entries(pattern).into_iter().map(move |e| (&t.name, e)))
-            .collect();
-
-        match template {
-            Some(template) => {
-                let mut themes_m = HashMap::new();
-                for (k, v) in &themes {
-                    themes_m.entry(k).or_insert_with(Vec::new).push(v)
-                }
-
-                let mut adjs_m = HashMap::new();
-                for (k, v) in &adjs {
-                    adjs_m.entry(k).or_insert_with(Vec::new).push(v)
-                }
-
-                let mut context = Context::new();
-                Ok((0..number)
-                    .map(|_| {
-                        let aa: HashMap<_, Vec<_>> = adjs_m
-                            .iter()
-                            .map(|(k, v)| {
-                                (
-                                    k,
-                                    v.choose_multiple(&mut rand::thread_rng(), number)
-                                        .map(|e| e.to_owned())
-                                        .collect(),
-                                )
-                            })
-                            .collect();
-                        let tt: HashMap<_, Vec<_>> = themes_m
-                            .iter()
-                            .map(|(k, v)| {
-                                (
-                                    k,
-                                    v.choose_multiple(&mut rand::thread_rng(), number)
-                                        .map(|e| e.to_owned())
-                                        .collect(),
-                                )
-                            })
-                            .collect();
-
-                        context.insert("adjs", &aa);
-                        context.insert("themes", &tt);
-                        Tera::one_off(template, &context, true).unwrap()
-                    })
-                    .collect())
-            }
-            None => {
-                let adj_random_sel: Vec<_> = adjs
-                    .choose_multiple(&mut rand::thread_rng(), number)
-                    .map(|a| a.to_owned())
-                    .collect();
-
-                let themes_random_sel: Vec<_> = themes
-                    .choose_multiple(&mut rand::thread_rng(), number)
-                    .map(|e| e.to_owned())
-                    .collect();
-
-                Ok(adj_random_sel
-                    .iter()
-                    .zip(themes_random_sel.iter())
-                    .map(|((ap, a), (tp, t))| format!("[{} | {:^12}]\t{} {}", ap, tp, a, t))
                     .collect())
             }
         }
