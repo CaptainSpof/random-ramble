@@ -12,6 +12,8 @@
     - [[#build-for-release][Build for release]]
     - [[#build-a-docker-image][Build a Docker image]]
 - [[#features][Features]]
+  - [[#template][Template]]
+    - [[#limitations][Limitations]]
   - [[#subcommands][SubCommands]]
     - [[#add][~add~]]
     - [[#delete][~delete~]]
@@ -26,6 +28,7 @@
   - [[#specify-a-length][Specify a length]]
   - [[#specify-a-theme][Specify a theme]]
   - [[#exclude-a-theme][Exclude a theme]]
+  - [[#template-1][Template]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -42,6 +45,9 @@ One of its (few) usecase is to generate a sprint name or a release name.
 
 ** Building from sources
 To build from source: first, clone this repository.
+#+BEGIN_SRC sh
+git clone https://github.com/CaptainSpof/random-ramble.git
+#+END_SRC
 
 *** Prerequisites
 Requires cargo 1.40 or newer
@@ -63,6 +69,38 @@ docker build -t random-ramble .
 
 * Features
 # An in-depth list of features, how to use them, and their dependencies.
+
+** Template
+By default, ~random-ramble~ will generate a couple of adjective and theme. It is
+however possible to specify a template (~-T '<template>'~)
+The template follow the ~tera~ notation (which is inspired from Jinja2)
+
+this allow multiple features:
+- random entry from all themes / adjs
+  Available choices are:
+  - ~adj~ for adjectives
+  - ~theme~ for themes
+  #+BEGIN_SRC sh
+{{ adj }} {{ theme }}
+  #+END_SRC
+- random entry from a specific subset
+  Allows you to limit the categorie of either ~adj~ or ~theme~
+  #+BEGIN_SRC sh
+{{ adjs.en.0 }} {{ themes.superheroes.0 }}
+  #+END_SRC
+- filter the output
+  You can apply a filter to the output:
+  #+BEGIN_SRC sh
+{{ adj | title }} {{ themes.superheroes.0 | upper }}
+  #+END_SRC
+
+*** Limitations
+
+**** objects need to have an index
+field in the dot notation need an index .i.e:
+#+BEGIN_SRC jinja2
+{{ themes.superheroes.0 }} {{ themes.superheroes.1 }}
+#+END_SRC
 
 ** SubCommands
 
@@ -88,7 +126,6 @@ Removes one or multiple entries from a theme.
 
 **** Aliases
 - ~remove~
-- ~rm~
 - ~del~
 
 **** Examples
@@ -218,7 +255,7 @@ rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
 
 * Examples
 ** Pattern - starts with
-Generates random words with default parameters, for words starting with 'A'.
+Generates random words with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
 rr a
 #+END_SRC
@@ -236,7 +273,7 @@ Aboriginal Amunet Black
 Able Aegeus
 #+END_SRC
 ** Specify a length
-Generates 3 random words with default parameters, for words starting with 'A'.
+Generates 3 random words with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
 rr a -l 3
 #+END_SRC
@@ -247,7 +284,7 @@ Abnormal Akron
 Angelic Alexander Anderson
 #+END_SRC
 ** Specify a theme
-Generates 3 random words of theme 'animals' with default parameters, for words starting with 'A'.
+Generates 3 random words of theme 'animals' with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
 rr a -l 3 --themes animals
 #+END_SRC
@@ -258,7 +295,7 @@ Apprehensive Anteater
 Alive Antelope
 #+END_SRC
 ** Exclude a theme
-Generates 3 random words of any available theme besides 'disney' with default parameters.
+Generates 3 random words of any available theme besides 'disney' with default parameters:
 #+BEGIN_SRC bash
 rr a -l 3 --themes '!disney'
 #+END_SRC
@@ -267,6 +304,17 @@ output:
 Ambitious Dogfish
 Stormy Fironic
 Resourceful Magpie
+#+END_SRC
+** Template
+Generates a template with random entries:
+#+BEGIN_SRC sh
+rr a -T '{{ themes.boyname.0 }}, the {{adjs.superlative.0 | lower }} {{ themes.color.0 | lower }} {{ theme }}' -n 3
+#+END_SRC
+output:
+#+BEGIN_SRC sh
+Julian, the busiest grey Dr. Robotnik
+Jackson, the creepiest pink Master Chief
+Daniel, the juiciest teal Bowser
 #+END_SRC
 
 * Troubleshooting
