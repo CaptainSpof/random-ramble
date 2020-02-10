@@ -54,7 +54,7 @@ fn main() {
                     config.pattern.as_deref(),
                     config.number,
                     config.template.as_deref(),
-                    config.verbose < 3);
+                    config.verbose >= 1);
 
             match ramble {
                 Ok(ramble) => {
