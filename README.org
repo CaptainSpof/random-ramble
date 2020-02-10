@@ -76,7 +76,7 @@ however possible to specify a manual template.
 
 The template follow the ~tera~ notation (which is inspired by Jinja2)
 
-this allow multiple features:
+This allow multiple features:
 - random entry from all themes / adjs
 
   Available choices are:
@@ -87,7 +87,7 @@ this allow multiple features:
   #+END_SRC
 - random entry from a specific subset
 
-  Allows you to limit the categorie of either ~adj~ or ~theme~
+  Allow you to limit the categorie of either ~adj~ or ~theme~
   #+BEGIN_SRC sh
 {{ adjs.en.0 }} {{ themes.superheroes.0 }}
   #+END_SRC
@@ -109,7 +109,7 @@ field in the dot notation need an index .i.e:
 ** SubCommands
 
 *** ~add~
-Adds one or multiple entries to a theme or create a new one if the theme is not found.
+Add one or multiple entries to a theme or create a new one if the theme is not found.
 
 **** Examples
 ***** Add to an existing theme
@@ -120,13 +120,13 @@ rr add superheroes Batman
 #+BEGIN_SRC sh
 rr add superheroes < /tmp/heroes.txt
 #+END_SRC
-***** Add to adjectives
+***** Add to an adjective
 #+BEGIN_SRC bash
-rr add -a adjectives_fr Inutile
+rr add -a fr Inutile
 #+END_SRC
 
 *** ~delete~
-Removes one or multiple entries from a theme.
+Remove one or multiple entries from a theme.
 
 **** Aliases
 - ~remove~
@@ -135,15 +135,15 @@ Removes one or multiple entries from a theme.
 **** Examples
 ***** Remove from a theme
 #+BEGIN_SRC bash
-rr rm superheroes Batman
+rr del superheroes Batman
 #+END_SRC
 ***** Remove from a list in a file
 #+BEGIN_SRC sh
-rr rm superheroes < /tmp/heroes.txt
+rr del superheroes < /tmp/heroes.txt
 #+END_SRC
-***** Remove from adjectives
+***** Remove from an adjective
 #+BEGIN_SRC bash
-rr rm -a adjectives_fr Inutile
+rr del -a fr Inutile
 #+END_SRC
 
 * Usage
@@ -259,7 +259,7 @@ rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
 
 * Examples
 ** Pattern - starts with
-Generates random words with default parameters, for words starting with 'A':
+Generate random words with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
 rr a
 #+END_SRC
@@ -277,7 +277,7 @@ Aboriginal Amunet Black
 Able Aegeus
 #+END_SRC
 ** Specify a length
-Generates 3 random words with default parameters, for words starting with 'A':
+Generate 3 random words with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
 rr a -n 3
 #+END_SRC
@@ -288,7 +288,7 @@ Abnormal Akron
 Angelic Alexander Anderson
 #+END_SRC
 ** Specify a theme
-Generates 3 random words of theme 'animals' with default parameters, for words starting with 'A':
+Generate 3 random words of theme 'animals' with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
 rr a -n 3 --themes animals
 #+END_SRC
@@ -299,7 +299,7 @@ Apprehensive Anteater
 Alive Antelope
 #+END_SRC
 ** Exclude a theme
-Generates 3 random words of any available theme besides 'disney' with default parameters:
+Generate 3 random words of any available theme besides 'disney' with default parameters:
 #+BEGIN_SRC bash
 rr -n 3 --themes '!disney'
 #+END_SRC
@@ -310,7 +310,7 @@ Stormy Fironic
 Resourceful Magpie
 #+END_SRC
 ** Specify a template
-Generates a template with random entries:
+Generate a template with random entries:
 #+BEGIN_SRC sh
 rr -T '{{ themes.boyname.0 }}, the {{adjs.superlative.0 | lower }} {{ adj | lower }} {{ themes.color.0 | lower }} {{ themes.videogame.0 }}' -n 4
 #+END_SRC
