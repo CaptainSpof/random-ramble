@@ -72,7 +72,7 @@ docker build -t random-ramble .
 
 ** Template
 By default, ~random-ramble~ will generate a couple of adjective and theme. It is
-however possible to specify a template ( ~-T '<template>'~ )
+however possible to specify a template ( ~-T '<template>' ~ )
 The template follow the ~tera~ notation (which is inspired from Jinja2)
 
 this allow multiple features:
