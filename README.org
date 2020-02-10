@@ -72,11 +72,12 @@ docker build -t random-ramble .
 
 ** Template
 By default, ~random-ramble~ will generate a couple of adjective and theme. It is
-however possible to specify a template (~-T '<template>'~)
+however possible to specify a template ( ~-T '<template>'~ )
 The template follow the ~tera~ notation (which is inspired from Jinja2)
 
 this allow multiple features:
 - random entry from all themes / adjs
+
   Available choices are:
   - ~adj~ for adjectives
   - ~theme~ for themes
@@ -84,11 +85,13 @@ this allow multiple features:
 {{ adj }} {{ theme }}
   #+END_SRC
 - random entry from a specific subset
+
   Allows you to limit the categorie of either ~adj~ or ~theme~
   #+BEGIN_SRC sh
 {{ adjs.en.0 }} {{ themes.superheroes.0 }}
   #+END_SRC
 - filter the output
+
   You can apply a filter to the output:
   #+BEGIN_SRC sh
 {{ adj | title }} {{ themes.superheroes.0 | upper }}
