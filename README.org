@@ -312,13 +312,14 @@ Resourceful Magpie
 ** Specify a template
 Generates a template with random entries:
 #+BEGIN_SRC sh
-rr a -T '{{ themes.boyname.0 }}, the {{adjs.superlative.0 | lower }} {{ themes.color.0 | lower }} {{ theme }}' -n 3
+rr -T '{{ themes.boyname.0 }}, the {{adjs.superlative.0 | lower }} {{ adj | lower }} {{ themes.color.0 | lower }} {{ themes.videogame.0 }}' -n 4
 #+END_SRC
 output:
 #+BEGIN_SRC sh
-Julian, the busiest grey Dr. Robotnik
-Jackson, the creepiest pink Master Chief
-Daniel, the juiciest teal Bowser
+Alexander, the faintest mission-critical pink Peach
+Asher, the funniest condescending yellow Agent 47
+Thomas, the bloodiest tough white Vault Boy
+Mateo, the busiest gangsta tilleul Dovahkiin
 #+END_SRC
 
 * Troubleshooting
