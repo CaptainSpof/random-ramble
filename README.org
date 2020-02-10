@@ -279,7 +279,7 @@ Able Aegeus
 ** Specify a length
 Generates 3 random words with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
-rr a -l 3
+rr a -n 3
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -290,7 +290,7 @@ Angelic Alexander Anderson
 ** Specify a theme
 Generates 3 random words of theme 'animals' with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
-rr a -l 3 --themes animals
+rr a -n 3 --themes animals
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -301,7 +301,7 @@ Alive Antelope
 ** Exclude a theme
 Generates 3 random words of any available theme besides 'disney' with default parameters:
 #+BEGIN_SRC bash
-rr a -l 3 --themes '!disney'
+rr -n 3 --themes '!disney'
 #+END_SRC
 output:
 #+BEGIN_SRC bash
