@@ -11,7 +11,5 @@ random-ramble = { path = "../core" }
 
 structopt = "0.3"
 serde = { version = "1.0.101", features = ["derive"] }
-walkdir = "2.2.9"
-rand = "0.7.3"
 log = "0.4"
 env_logger = "0.7"
