@@ -14,7 +14,8 @@ RUN cargo build --release
 RUN rm src/*.rs
 
 # copy your source tree
-COPY ./src ./src
+COPY core core
+COPY cli cli
 
 COPY ./Cargo.toml ./Cargo.toml
 
