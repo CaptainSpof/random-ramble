@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! error {
+macro_rules! fail {
     ($($arg:tt)*) => {
         $crate::Error::Custom(format!("{}", format_args!($($arg)*)))
     };

@@ -4,8 +4,9 @@ use serde::Serialize;
 use std::error::Error as stdError;
 use tera::{Context, Tera};
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::io::{prelude::*, BufReader};
+use std::path::Path;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
 
@@ -62,6 +63,25 @@ impl RandomRamble {
             .filter_map(Result::ok)
             .collect();
 
+        if let Some(ref themes) = themes {
+            let themes_path = themes_path.to_str().expect("shit, that's my luck...");
+            let r: Vec<String> = themes
+                .into_iter()
+                .map(|t| {
+                    if !Path::new(&format!("{}/{}", themes_path, &t)).exists() {
+                        Some(t.to_owned())
+                    } else {
+                        None
+                    }
+                })
+                .flatten()
+                .collect();
+
+            if r.len() > 0 {
+                bail!("couldn't find file for theme(s) {} in path {}, aborting", r.join(", "), themes_path);
+            }
+        }
+
         let themes: Vec<Type> = WalkDir::new(themes_path)
             .into_iter()
             .filter_map(Result::ok)
@@ -70,6 +90,7 @@ impl RandomRamble {
                 debug!("theme file: {:#?}", file);
                 match &themes {
                     Some(sel_themes) => {
+                        // check if file exist
                         // exclude themes that starts with '!'
                         let excluded_themes: Vec<_> = sel_themes
                             .into_iter()
@@ -78,7 +99,7 @@ impl RandomRamble {
                         debug!("excluded themes {:?}", excluded_themes);
 
                         let theme_file_name = match file.file_name().to_str() {
-                            Some(file_name) => file_name,
+                            Some(file_name) => file_name.to_string(),
                             None => {
                                 warn!("couldn't get name for theme file");
                                 return false;
@@ -90,7 +111,7 @@ impl RandomRamble {
                         if !excluded_themes.is_empty() {
                             !excluded_themes.contains(&theme_name)
                         } else {
-                            sel_themes.contains(&theme_file_name.to_string())
+                            sel_themes.contains(&theme_file_name)
                         }
                     }
                     None => true,
@@ -126,6 +147,7 @@ impl RandomRamble {
                             .iter()
                             .map(|a| {
                                 let subset = a.random_entries(pattern, number);
+                                debug!("adjs subset: {:?}", subset);
                                 (a.name.clone(), subset)
                             })
                             .collect();
@@ -134,6 +156,7 @@ impl RandomRamble {
                             .iter()
                             .map(|t| {
                                 let subset = t.random_entries(pattern, number);
+                                debug!("themes subset: {:?}", subset);
                                 (t.name.clone(), subset)
                             })
                             .collect();
@@ -190,7 +213,7 @@ impl RandomRamble {
                         match Tera::one_off(template, &context, true) {
                             Ok(r) => Ok(r),
                             Err(e) => {
-                                warn!("{:#?}, skipping", e.source().unwrap().to_string());
+                                warn!("{}, skipping", e.source().expect("shouldn't fail... I think"));
                                 Err(e)
                             }
                         }
@@ -228,8 +251,8 @@ impl RandomRamble {
                         let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
                             Some(a) => (&a.name, a.random_entry(pattern)?),
                             None => {
-                                warn!(r#"couldn't get random adjectives entries"#);
-                                bail!(r#"'chier"#)
+                                warn!("couldn\'t get random adjectives entries");
+                                bail!("\'chier")
                             }
                         };
                         let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
@@ -240,7 +263,10 @@ impl RandomRamble {
                             }
                         };
                         if with_details {
-                            Ok(format!("[ {:^12} | {:^12} ]\t\t{} {}", adj_name, theme_name, adj, theme))
+                            Ok(format!(
+                                "[ {:^12} | {:^12} ]\t\t{} {}",
+                                adj_name, theme_name, adj, theme
+                            ))
                         } else {
                             Ok(format!("{} {}", adj, theme))
                         }
@@ -269,23 +295,23 @@ impl Type {
         let buf = BufReader::new(f);
         let entries = buf
             .lines()
-            .map(|l| l.expect("Could not parse line"))
+            .map(|l| l)
+            .filter_map(Result::ok)
             .collect::<Vec<String>>();
+        let name = match file.file_name().to_str() {
+            Some(name) => name.to_owned(),
+            None => bail!("fuck, couldn't get file_name"),
+        };
+        let path = match file.path().to_str() {
+            Some(path) => path.to_owned(),
+            None => bail!("fuck, couldn't get path"),
+        };
 
         Ok(Self {
-            name: file.file_name().to_str().expect("FIX ME").to_owned(),
-            path: file.path().to_str().expect("FIX ME").to_owned(),
+            name,
+            path,
             entries,
         })
-    }
-
-    fn _populate_entries(&mut self) {
-        let file = std::fs::File::open(&self.path).expect("Unable to open file");
-        let buf = BufReader::new(file);
-        self.entries = buf
-            .lines()
-            .map(|l| l.expect("Could not parse line"))
-            .collect::<Vec<String>>()
     }
 
     pub fn entries(&self, pattern: Option<&str>) -> Vec<String> {

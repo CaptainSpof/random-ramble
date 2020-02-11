@@ -20,13 +20,12 @@ fn main() {
     let rr = match RandomRamble::new(
         &config.adjectives_path,
         config.adjectives,
-        // config.adjectives.as_deref(),
         &config.themes_path,
         config.themes,
     ) {
         Ok(rr) => rr,
         Err(e) => {
-            eprintln!("Crote, une erreur: {:#?}", e);
+            error!("Crote, une erreur: {}", e);
             std::process::exit(1);
         }
     };
@@ -49,7 +48,6 @@ fn main() {
             }
         }
         None => {
-            // let ramble = match config.verbose {
             let ramble = rr.randomize(
                     config.pattern.as_deref(),
                     config.number,

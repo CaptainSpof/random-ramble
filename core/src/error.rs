@@ -14,7 +14,7 @@ impl From<std::io::Error> for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Custom(e) => write!(f, "oh shit: {}", e)
+            Self::Custom(e) => write!(f, "{}", e)
         }
     }
 }
