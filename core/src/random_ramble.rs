@@ -25,6 +25,47 @@ impl RandomRamble {
         themes_path: &PathBuf,
         themes: Option<Vec<String>>,
     ) -> Result<Self, Error> {
+
+        if let Some(ref adjs) = adjs {
+            let adjs_path = adjs_path.to_str().expect("shit, that's my luck...");
+            let r: Vec<String> = adjs
+                .into_iter()
+                .filter(|a| !a.starts_with('!'))
+                .map(|a| {
+                    if !Path::new(&format!("{}/{}", adjs_path, &a)).exists() {
+                        Some(a.to_owned())
+                    } else {
+                        None
+                    }
+                })
+                .flatten()
+                .collect();
+
+            if r.len() > 0 {
+                bail!("couldn't find file for adjective(s) {} in path {}, aborting", r.join(", "), adjs_path);
+            }
+        };
+
+        if let Some(ref themes) = themes {
+            let themes_path = themes_path.to_str().expect("shit, that's my luck...");
+            let r: Vec<String> = themes
+                .into_iter()
+                .filter(|t| !t.starts_with('!'))
+                .map(|t| {
+                    if !Path::new(&format!("{}/{}", themes_path, &t)).exists() {
+                        Some(t.to_owned())
+                    } else {
+                        None
+                    }
+                })
+                .flatten()
+                .collect();
+
+            if r.len() > 0 {
+                bail!("couldn't find file for theme(s) {} in path {}, aborting", r.join(", "), themes_path);
+            }
+        };
+
         let adjs: Vec<Type> = WalkDir::new(adjs_path)
             .into_iter()
             .filter_map(|e| e.ok())
@@ -63,25 +104,6 @@ impl RandomRamble {
             .filter_map(Result::ok)
             .collect();
 
-        if let Some(ref themes) = themes {
-            let themes_path = themes_path.to_str().expect("shit, that's my luck...");
-            let r: Vec<String> = themes
-                .into_iter()
-                .map(|t| {
-                    if !Path::new(&format!("{}/{}", themes_path, &t)).exists() {
-                        Some(t.to_owned())
-                    } else {
-                        None
-                    }
-                })
-                .flatten()
-                .collect();
-
-            if r.len() > 0 {
-                bail!("couldn't find file for theme(s) {} in path {}, aborting", r.join(", "), themes_path);
-            }
-        }
-
         let themes: Vec<Type> = WalkDir::new(themes_path)
             .into_iter()
             .filter_map(Result::ok)
@@ -90,7 +112,6 @@ impl RandomRamble {
                 debug!("theme file: {:#?}", file);
                 match &themes {
                     Some(sel_themes) => {
-                        // check if file exist
                         // exclude themes that starts with '!'
                         let excluded_themes: Vec<_> = sel_themes
                             .into_iter()
