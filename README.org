@@ -100,7 +100,7 @@ This allow multiple features:
 
 *** Limitations
 
-**** objects need to have an index
+**** nested objects need to have an index
 field in the dot notation need an index .i.e:
 #+BEGIN_SRC jinja2
 {{ themes.superhero.0 }} {{ themes.superhero.1 }}
