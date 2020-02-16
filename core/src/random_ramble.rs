@@ -25,46 +25,63 @@ impl RandomRamble {
         themes_path: &PathBuf,
         themes: Option<Vec<String>>,
     ) -> Result<Self, Error> {
+        // if let Some(ref adjs) = adjs {
+        //     let adjs_path = adjs_path.to_str().expect("shit, that's my luck...");
+        //     let r: Vec<String> = adjs
+        //         .into_iter()
+        //         .filter(|a| !a.starts_with('!'))
+        //         .map(|a| {
+        //             if !Path::new(&format!("{}/{}", adjs_path, &a)).exists() {
+        //                 Some(a.to_owned())
+        //             } else {
+        //                 None
+        //             }
+        //         })
+        //         .flatten()
+        //         .collect();
 
-        if let Some(ref adjs) = adjs {
-            let adjs_path = adjs_path.to_str().expect("shit, that's my luck...");
-            let r: Vec<String> = adjs
-                .into_iter()
-                .filter(|a| !a.starts_with('!'))
-                .map(|a| {
-                    if !Path::new(&format!("{}/{}", adjs_path, &a)).exists() {
-                        Some(a.to_owned())
-                    } else {
-                        None
-                    }
-                })
-                .flatten()
-                .collect();
+        //     if r.len() > 0 {
+        //         bail!("couldn't find file for adjective(s) {} in path {}, aborting", r.join(", "), adjs_path);
+        //     }
+        // };
 
-            if r.len() > 0 {
-                bail!("couldn't find file for adjective(s) {} in path {}, aborting", r.join(", "), adjs_path);
+        // if let Some(ref themes) = themes {
+        //     let themes_path = themes_path.to_str().expect("shit, that's my luck...");
+        //     let r: Vec<String> = themes
+        //         .into_iter()
+        //         .filter(|t| !t.starts_with('!'))
+        //         .map(|t| {
+        //             if !Path::new(&format!("{}/{}", themes_path, &t)).exists() {
+        //                 Some(t.to_owned())
+        //             } else {
+        //                 None
+        //             }
+        //         })
+        //         .flatten()
+        //         .collect();
+
+        //     if r.len() > 0 {
+        //         bail!("couldn't find file for theme(s) {} in path {}, aborting", r.join(", "), themes_path);
+        //     }
+        // };
+
+        let (excluded_adjs, adjs_path) = match &adjs {
+            Some(sel_adjs) => {
+                debug!("{:#?}", sel_adjs);
+                if sel_adjs.into_iter().any(|a| a.ends_with("/")) {
+                    info!("yes");
+                }
+                (
+                    sel_adjs
+                        .into_iter()
+                        .filter(|t| t.starts_with('!'))
+                        .collect(),
+                    adjs_path,
+                )
             }
+            None => (vec![], adjs_path),
         };
-
-        if let Some(ref themes) = themes {
-            let themes_path = themes_path.to_str().expect("shit, that's my luck...");
-            let r: Vec<String> = themes
-                .into_iter()
-                .filter(|t| !t.starts_with('!'))
-                .map(|t| {
-                    if !Path::new(&format!("{}/{}", themes_path, &t)).exists() {
-                        Some(t.to_owned())
-                    } else {
-                        None
-                    }
-                })
-                .flatten()
-                .collect();
-
-            if r.len() > 0 {
-                bail!("couldn't find file for theme(s) {} in path {}, aborting", r.join(", "), themes_path);
-            }
-        };
+        debug!("excluded adjectives {:?}", excluded_adjs);
 
         let adjs: Vec<Type> = WalkDir::new(adjs_path)
             .into_iter()
@@ -74,13 +91,6 @@ impl RandomRamble {
                 debug!("adjective file: {:#?}", file);
                 match &adjs {
                     Some(sel_adjs) => {
-                        // exclude adjectives that starts with '!'
-                        let excluded_adjs: Vec<_> = sel_adjs
-                            .into_iter()
-                            .filter(|t| t.starts_with('!'))
-                            .collect();
-                        debug!("excluded adjectives {:?}", excluded_adjs);
-
                         let adj_file_name = match file.file_name().to_str() {
                             Some(file_name) => file_name,
                             None => {
@@ -104,6 +114,25 @@ impl RandomRamble {
             .filter_map(Result::ok)
             .collect();
 
+        let (excluded_themes, themes_path) = match &themes {
+            Some(sel_themes) => {
+                debug!("{:#?}", sel_themes);
+                if sel_themes.into_iter().any(|a| a.ends_with("/")) {
+                    debug!("yes");
+                }
+                (
+                    sel_themes
+                        .into_iter()
+                        .filter(|t| t.starts_with('!'))
+                        .collect(),
+                    themes_path,
+                )
+            }
+            None => (vec![], themes_path),
+        };
+        debug!("excluded themes {:?}", excluded_adjs);
+        debug!("themes path {:?}", themes_path);
+
         let themes: Vec<Type> = WalkDir::new(themes_path)
             .into_iter()
             .filter_map(Result::ok)
@@ -112,13 +141,6 @@ impl RandomRamble {
                 debug!("theme file: {:#?}", file);
                 match &themes {
                     Some(sel_themes) => {
-                        // exclude themes that starts with '!'
-                        let excluded_themes: Vec<_> = sel_themes
-                            .into_iter()
-                            .filter(|t| t.starts_with('!'))
-                            .collect();
-                        debug!("excluded themes {:?}", excluded_themes);
-
                         let theme_file_name = match file.file_name().to_str() {
                             Some(file_name) => file_name.to_string(),
                             None => {
@@ -161,7 +183,7 @@ impl RandomRamble {
             Some(template) => {
                 let mut context = Context::new();
 
-                let results: Vec<String> = (0..number)
+                let results: Vec<_> = (0..number)
                     .map(|_| {
                         let adjs: BTreeMap<_, Vec<_>> = self
                             .adjs
@@ -244,6 +266,7 @@ impl RandomRamble {
 
                 Ok(results)
             }
+
             None => {
                 let (adjs, themes): (Vec<_>, Vec<_>) = match pattern {
                     Some(pattern) => (
@@ -270,14 +293,14 @@ impl RandomRamble {
                 Ok((0..number)
                     .map(|_| {
                         let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
-                            Some(a) => (&a.name, a.random_entry(pattern)?),
+                            Some(ref a) => (&a.name, a.random_entry(pattern)?),
                             None => {
                                 warn!("couldn\'t get random adjectives entries");
                                 bail!("\'chier")
                             }
                         };
                         let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
-                            Some(t) => (&t.name, t.random_entry(pattern)?),
+                            Some(ref t) => (&t.name, t.random_entry(pattern)?),
                             None => {
                                 warn!("couldn't get random themes entries");
                                 bail!("'chier")
@@ -354,9 +377,7 @@ impl Type {
     }
 
     pub fn random_entry(&self, pattern: Option<&str>) -> Result<String, Error> {
-        let r = self.entries(pattern);
-        let r = r.choose(&mut rand::thread_rng());
-        match r {
+        match self.entries(pattern).choose(&mut rand::thread_rng()) {
             Some(r) => Ok(r.to_string()),
             None => match pattern {
                 Some(p) => bail!(
