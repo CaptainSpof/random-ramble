@@ -6,7 +6,7 @@ use tera::{Context, Tera};
 
 use std::collections::BTreeMap;
 use std::io::{prelude::*, BufReader};
-use std::path::Path;
+// use std::path::Path;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
 
