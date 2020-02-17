@@ -67,7 +67,7 @@ pub fn delete(theme_path: &PathBuf, theme: &str, entries: Vec<String>) {
 
             if !lines.is_empty() {
                 if !deleting.is_empty() {
-                    info!("deteting entries: {}", deleting.join(" "));
+                    info!("deleting entries: {}", deleting.join(" "));
                 } else {
                     warn!("nothing to delete")
                 }
