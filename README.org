@@ -29,6 +29,7 @@
   - [[#specify-a-theme][Specify a theme]]
   - [[#exclude-a-theme][Exclude a theme]]
   - [[#specify-a-template][Specify a template]]
+  - [[#generate-random-words-for-each-themes-with-fd][Generate random words for each themes (with ~fd~)]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -320,6 +321,10 @@ Alexander, the faintest mission-critical pink Peach
 Asher, the funniest condescending yellow Agent 47
 Thomas, the bloodiest tough white Vault Boy
 Mateo, the busiest gangsta tilleul Dovahkiin
+#+END_SRC
+** Generate random words for each themes (with ~fd~)
+#+BEGIN_SRC sh
+fd . -t f dict/themes --exec ./rr -t '{/}'
 #+END_SRC
 
 * Troubleshooting
