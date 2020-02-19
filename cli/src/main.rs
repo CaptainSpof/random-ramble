@@ -17,11 +17,15 @@ fn main() {
     init_logger(config.verbose);
     debug!("config: {:#?}", config);
 
+    let themes = config.themes.iter().map(AsRef::as_ref).collect();
+    let adjs = config.adjs.iter().map(AsRef::as_ref).collect();
+
     let rr = match RandomRamble::new(
         &config.adjectives_path,
-        config.adjectives,
+        adjs,
         &config.themes_path,
-        config.themes,
+        themes
+        // config.themes
     ) {
         Ok(rr) => rr,
         Err(e) => {
@@ -29,8 +33,6 @@ fn main() {
             std::process::exit(1);
         }
     };
-
-
 
     match config.cmd {
         Some(Command::Add(c)) => {

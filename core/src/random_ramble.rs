@@ -21,9 +21,10 @@ pub struct RandomRamble {
 impl RandomRamble {
     pub fn new(
         adjs_path: &PathBuf,
-        adjs: Option<Vec<String>>,
+        adjs: Vec<&str>,
         themes_path: &PathBuf,
-        themes: Option<Vec<String>>,
+        // themes: Option<Vec<&str>>,
+        themes: Vec<&str>,
     ) -> Result<Self, Error> {
         // if let Some(ref adjs) = adjs {
         //     let adjs_path = adjs_path.to_str().expect("shit, that's my luck...");
@@ -65,22 +66,13 @@ impl RandomRamble {
         //     }
         // };
 
-        let (excluded_adjs, adjs_path) = match &adjs {
-            Some(sel_adjs) => {
-                debug!("{:#?}", sel_adjs);
-                if sel_adjs.into_iter().any(|a| a.ends_with("/")) {
-                    info!("yes");
-                }
-                (
-                    sel_adjs
-                        .into_iter()
-                        .filter(|t| t.starts_with('!'))
-                        .collect(),
-                    adjs_path,
-                )
-            }
-            None => (vec![], adjs_path),
-        };
+        let (excluded_adjs, adjs_path) = (
+            adjs.iter()
+                .filter(|t| t.starts_with('!'))
+                .map(|x| x.clone())
+                .collect::<Vec<&str>>(),
+            adjs_path,
+        );
         debug!("excluded adjectives {:?}", excluded_adjs);
 
         let adjs: Vec<Type> = WalkDir::new(adjs_path)
@@ -88,48 +80,39 @@ impl RandomRamble {
             .filter_map(|e| e.ok())
             .filter(|metadata| metadata.file_type().is_file())
             .filter(|file| {
-                debug!("adjective file: {:#?}", file);
-                match &adjs {
-                    Some(sel_adjs) => {
-                        let adj_file_name = match file.file_name().to_str() {
-                            Some(file_name) => file_name,
-                            None => {
-                                warn!("couldn't get name for adjective file");
-                                return false;
-                            }
-                        };
-
-                        let adj_name = &format!("!{}", adj_file_name);
-
-                        if !excluded_adjs.is_empty() {
-                            !excluded_adjs.contains(&adj_name)
-                        } else {
-                            sel_adjs.contains(&adj_file_name.to_string())
-                        }
+                debug!("adjective file: {:#?}", &file);
+                if adjs.is_empty() {
+                    return true;
+                }
+                let adj_file_name = match file.file_name().to_str() {
+                    Some(file_name) => file_name,
+                    None => {
+                        warn!("couldn't get name for adjective file");
+                        return false;
                     }
-                    None => true,
+                };
+
+                let adj_name: &str = &format!("!{}", &adj_file_name);
+
+                if !excluded_adjs.is_empty() {
+                    !&excluded_adjs.contains(&adj_name)
+                } else {
+                    adjs.contains(&adj_file_name.as_ref())
                 }
             })
             .map(|a| Type::new(&a))
             .filter_map(Result::ok)
             .collect();
 
-        let (excluded_themes, themes_path) = match &themes {
-            Some(sel_themes) => {
-                debug!("{:#?}", sel_themes);
-                if sel_themes.into_iter().any(|a| a.ends_with("/")) {
-                    debug!("yes");
-                }
-                (
-                    sel_themes
-                        .into_iter()
-                        .filter(|t| t.starts_with('!'))
-                        .collect(),
-                    themes_path,
-                )
-            }
-            None => (vec![], themes_path),
-        };
+        let (excluded_themes, themes_path) = (
+            themes
+                .iter()
+                .filter(|t| t.starts_with('!'))
+                .map(|t| t.clone())
+                .collect::<Vec<&str>>(),
+            themes_path,
+        );
+
         debug!("excluded themes {:?}", excluded_adjs);
         debug!("themes path {:?}", themes_path);
 
@@ -139,32 +122,33 @@ impl RandomRamble {
             .filter(|metadata| metadata.file_type().is_file())
             .filter(|file| {
                 debug!("theme file: {:#?}", file);
-                match &themes {
-                    Some(sel_themes) => {
-                        let theme_file_name = match file.file_name().to_str() {
-                            Some(file_name) => file_name.to_string(),
-                            None => {
-                                warn!("couldn't get name for theme file");
-                                return false;
-                            }
-                        };
-
-                        let theme_name = &format!("!{}", theme_file_name);
-
-                        if !excluded_themes.is_empty() {
-                            !excluded_themes.contains(&theme_name)
-                        } else {
-                            sel_themes.contains(&theme_file_name)
-                        }
+                if themes.is_empty() {
+                    return true;
+                }
+                let theme_file_name = match file.file_name().to_str() {
+                    Some(file_name) => file_name,
+                    None => {
+                        warn!("couldn't get name for theme file");
+                        return false;
                     }
-                    None => true,
+                };
+
+                let theme_name: &str = &format!("!{}", theme_file_name);
+
+                if !excluded_themes.is_empty() {
+                    !excluded_themes.contains(&&theme_name)
+                } else {
+                    themes.contains(&theme_file_name)
                 }
             })
-            .map(|a| Type::new(&a))
+            .map(|t| Type::new(&t))
             .filter_map(Result::ok)
             .collect();
 
-        Ok(Self { adjs, themes })
+        Ok(Self {
+            adjs,
+            themes,
+        })
     }
 
     pub fn randomize(
@@ -208,21 +192,55 @@ impl RandomRamble {
                         let available_themes: Vec<_> = themes.keys().collect();
 
                         if re_adj.is_match(template) {
-                            let rand_adj = match available_adjs.choose(&mut rand::thread_rng()) {
-                                Some(adj) => {
-                                    match adjs.get(&adj.to_string()) {
-                                        Some(adj) => adj,
-                                        None => {
-                                            warn!("unable to get random adjective, skipping");
-                                            panic!("unable to get random adjective, aborting (this is a bug)")
+                            let rand_adj:Vec<_> = (0..15).map(|_| {
+                                match available_adjs.choose(&mut rand::thread_rng()) {
+                                    Some(adj) => {
+                                        match adjs.get(&adj.to_string()) {
+                                            Some(adj) => match adj.is_empty() {
+                                                false => {
+                                                    adj.choose(&mut rand::thread_rng())
+                                                },
+                                                true => {
+                                                    None }
+                                            },
+                                            None => {
+                                                warn!("unable to get random adjective, skipping");
+                                                panic!("unable to get random adjective, aborting (this is a bug)")
+                                            }
                                         }
+                                    },
+                                    None => {
+                                        warn!("unable to get random adjective, skipping");
+                                        panic!("unable to get random adjective, aborting (this is a bug)")
                                     }
-                                },
-                                None => {
-                                    warn!("unable to get random adjective, skipping");
-                                    panic!("unable to get random adjective, aborting (this is a bug)")
                                 }
-                            };
+                            })
+                                // .skip_while(|a| a.is_some())
+                                .skip_while(|a| a.is_none())
+                                // .take_while(|a| a.is_some())
+                                .flatten()
+                                .collect();
+
+
+                            debug!("rand_adj len: {}", rand_adj.len());
+                            debug!("rand_adj: {:#?}", rand_adj);
+
+
+                            // let rand_adj = match available_adjs.choose(&mut rand::thread_rng()) {
+                            //     Some(adj) => {
+                            //         match adjs.get(&adj.to_string()) {
+                            //             Some(adj) => adj,
+                            //             None => {
+                            //                 warn!("unable to get random adjective, skipping");
+                            //                 panic!("unable to get random adjective, aborting (this is a bug)")
+                            //             }
+                            //         }
+                            //     },
+                            //     None => {
+                            //         warn!("unable to get random adjective, skipping");
+                            //         panic!("unable to get random adjective, aborting (this is a bug)")
+                            //     }
+                            // };
 
                             context.insert("adj", &rand_adj.choose(&mut rand::thread_rng()));
                         }
@@ -321,9 +339,6 @@ impl RandomRamble {
         }
     }
 }
-
-#[derive(Debug, Serialize)]
-struct _TypeT(String, Vec<String>);
 
 #[derive(Debug, Serialize)]
 struct Type {

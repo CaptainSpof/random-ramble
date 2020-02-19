@@ -29,7 +29,7 @@ pub struct Config {
     ///
     /// Themes preceded by '!' will be excluded
     #[structopt(short, long)]
-    pub themes: Option<Vec<String>>,
+    pub themes: Vec<String>,
 
     /// Path to the adjectives files
     #[structopt(long, env = "RR_ADJS_PATH", default_value = "./dict/adjectives")]
@@ -37,7 +37,7 @@ pub struct Config {
 
     /// A list of adjectives to be chosen from
     #[structopt(short, long)]
-    pub adjectives: Option<Vec<String>>,
+    pub adjs: Vec<String>,
 
     /// Provide a template from which to generate words
     #[structopt(short = "T", long)]
@@ -57,7 +57,7 @@ pub enum Command {
     #[structopt(name = "add")]
     /// Add entries to a theme, or create a new theme
     Add(Edit),
-    /// Delete entries from a theme, or create a new theme
+    /// Delete entries from a theme
     #[structopt(visible_aliases = &["remove", "del"])]
     Delete(Edit),
 }
