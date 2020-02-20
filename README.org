@@ -173,7 +173,7 @@ OPTIONS:
             A list of adjectives to be chosen from
 
         --adjectives-path <adjectives-path>
-            Path to the adjectives files [env: RR_ADJS_PATH=/home/daf/Projects/Rust/random-ramble/dict/adjectives]
+            Path to the adjectives files [env: RR_ADJS_PATH=~/Projects/Rust/random-ramble/dict/adjectives]
             [default: ./dict/adjectives]
     -n <number>
             The length of the list to be returned [env: RR_NB_RESULT=]  [default: 10]
@@ -186,7 +186,7 @@ OPTIONS:
 
             Themes preceded by '!' will be excluded
         --themes-path <themes-path>
-            Path to the themes files [env: RR_THEMES_PATH=/home/daf/Projects/Rust/random-ramble/dict/themes]  [default:
+            Path to the themes files [env: RR_THEMES_PATH=~/Projects/Rust/random-ramble/dict/themes]  [default:
             ./dict/themes]
 
 ARGS:
@@ -196,7 +196,7 @@ ARGS:
 
 SUBCOMMANDS:
     add       Add entries to a theme, or create a new theme
-    delete    Delete entries from a theme, or create a new theme [aliases: remove, del]
+    delete    Delete entries from a theme [aliases: remove, del]
     help      Prints this message or the help of the given subcommand(s)
 #+END_SRC
 
