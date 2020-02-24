@@ -69,7 +69,7 @@ impl RandomRamble {
         let (excluded_adjs, adjs_path) = (
             adjs.iter()
                 .filter(|t| t.starts_with('!'))
-                .map(|x| x.clone())
+                .copied()
                 .collect::<Vec<&str>>(),
             adjs_path,
         );
@@ -97,7 +97,7 @@ impl RandomRamble {
                 if !excluded_adjs.is_empty() {
                     !&excluded_adjs.contains(&adj_name)
                 } else {
-                    adjs.contains(&adj_file_name.as_ref())
+                    adjs.contains(&adj_file_name)
                 }
             })
             .map(|a| Type::new(&a))
@@ -108,7 +108,7 @@ impl RandomRamble {
             themes
                 .iter()
                 .filter(|t| t.starts_with('!'))
-                .map(|t| t.clone())
+                .copied()
                 .collect::<Vec<&str>>(),
             themes_path,
         );
@@ -158,8 +158,6 @@ impl RandomRamble {
         template: Option<&str>,
         with_details: bool,
     ) -> Result<Vec<String>, Error> {
-        let re_adjs = Regex::new(r"adjs").expect("this shouldn't fail");
-        let re_themes = Regex::new(r"themes").expect("this shouldn't fail");
         let re_adj = Regex::new(r"adj[^s]").expect("this shouldn't fail");
         let re_theme = Regex::new(r"theme[^s]").expect("this shouldn't fail");
 
@@ -195,7 +193,7 @@ impl RandomRamble {
                             let rand_adj:Vec<_> = (0..15).map(|_| {
                                 match available_adjs.choose(&mut rand::thread_rng()) {
                                     Some(adj) => {
-                                        match adjs.get(&adj.to_string()) {
+                                        match adjs.get(&(*adj).to_string()) {
                                             Some(adj) => match adj.is_empty() {
                                                 false => {
                                                     adj.choose(&mut rand::thread_rng())
@@ -248,7 +246,7 @@ impl RandomRamble {
                         if re_theme.is_match(template) {
                             let rand_theme = match available_themes.choose(&mut rand::thread_rng()) {
                                 Some(theme) => {
-                                    match themes.get(&theme.to_string()) {
+                                    match themes.get(&(*theme).to_string()) {
                                         Some(theme) => theme,
                                         None => {
                                             warn!("unable to get random themeective, skipping");
@@ -265,10 +263,12 @@ impl RandomRamble {
                             context.insert("theme", &rand_theme.choose(&mut rand::thread_rng()));
                         }
 
-                        if re_adjs.is_match(template) {
+                        // if re_adjs.is_match(template) {
+                        if template.contains("adjs") {
                             context.insert("adjs", &adjs);
                         }
-                        if re_themes.is_match(template) {
+                        // if re_themes.is_match(template) {
+                        if template.contains("themes") {
                             context.insert("themes", &themes);
                         }
                         match Tera::one_off(template, &context, true) {
