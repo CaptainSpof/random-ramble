@@ -1,9 +1,6 @@
-[package]
-name = "random-ramble"
-version = "0.1.0"
-authors = ["Cédric Da Fonseca <dafonseca.cedric@gmail.com>"]
-edition = "2018"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+members = [
+    "core",
+    "cli"
+]

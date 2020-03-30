@@ -5,29 +5,327 @@
 
 * Table of Contents :TOC_3:noexport:
 - [[#description][Description]]
-  - [[#maintainers][Maintainers]]
-- [[#prerequisites][Prerequisites]]
+- [[#installation][Installation]]
+  - [[#building-from-sources][Building from sources]]
+    - [[#prerequisites][Prerequisites]]
+    - [[#build-for-dev][Build for dev]]
+    - [[#build-for-release][Build for release]]
+    - [[#build-a-docker-image][Build a Docker image]]
 - [[#features][Features]]
+  - [[#template][Template]]
+    - [[#limitations][Limitations]]
+  - [[#subcommands][SubCommands]]
+    - [[#add][~add~]]
+    - [[#delete][~delete~]]
+- [[#usage][Usage]]
 - [[#configuration][Configuration]]
+  - [[#general][General]]
+    - [[#number][number]]
+    - [[#themes-path][themes path]]
+    - [[#adjectives-path][adjectives path]]
+- [[#examples][Examples]]
+  - [[#pattern---starts-with][Pattern - starts with]]
+  - [[#specify-a-length][Specify a length]]
+  - [[#specify-a-theme][Specify a theme]]
+  - [[#exclude-a-theme][Exclude a theme]]
+  - [[#specify-a-template][Specify a template]]
+  - [[#generate-random-words-for-each-themes-with-fd][Generate random words for each themes (with ~fd~)]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
-# A summary of what this module does.
+# A summary of what this project does.
 
-This project aims to be a simple words generator, words typically used as a
-sprint name.
+Random Ramble is a simple random words generator written in rust.
 
-** Maintainers
-+ @CaptainSpof (Author)
+It aims to generate a couple of words randomly based on parameters, such as
+starting patterns, themes etc.
 
-* Prerequisites
-This module has no prereqisites.
+One of its (few) usecase is to generate a sprint name or a release name.
+
+* Installation
+
+** Building from sources
+To build from source: first, clone this repository.
+#+BEGIN_SRC sh
+git clone https://github.com/CaptainSpof/random-ramble.git
+#+END_SRC
+
+*** Prerequisites
+Requires cargo 1.40 or newer
+
+*** Build for dev
+#+BEGIN_SRC sh
+cargo build
+#+END_SRC
+
+*** Build for release
+#+BEGIN_SRC sh
+cargo build --release
+#+END_SRC
+
+*** Build a Docker image
+#+BEGIN_SRC sh
+docker build -t random-ramble .
+#+END_SRC
 
 * Features
 # An in-depth list of features, how to use them, and their dependencies.
 
+** Template
+By default, ~random-ramble~ will generate a couple of adjective and theme. It is
+however possible to specify a manual template.
+
+The template follow the ~tera~ notation (which is inspired by Jinja2)
+
+This allow multiple features:
+- random entry from all themes / adjs
+
+  Available choices are:
+  - ~adj~ for adjectives
+  - ~theme~ for themes
+  #+BEGIN_SRC sh
+{{ adj }} {{ theme }}
+  #+END_SRC
+- random entry from a specific subset
+
+  Allow you to limit the categorie of either ~adj~ or ~theme~
+  #+BEGIN_SRC sh
+{{ adjs.en.0 }} {{ themes.superhero.0 }}
+  #+END_SRC
+- filter the output
+
+  You can apply a filter to the output:
+  #+BEGIN_SRC sh
+{{ adj | title }} {{ themes.superhero.0 | upper }}
+  #+END_SRC
+
+*** Limitations
+
+**** nested objects need to have an index
+field in the dot notation need an index .i.e:
+#+BEGIN_SRC jinja2
+{{ themes.superhero.0 }} {{ themes.superhero.1 }}
+#+END_SRC
+
+** SubCommands
+
+*** ~add~
+Add one or multiple entries to a theme or create a new one if the theme is not found.
+
+**** Examples
+***** Add to an existing theme
+#+BEGIN_SRC bash
+rr add superhero Batman
+#+END_SRC
+***** Add from a list in a file
+#+BEGIN_SRC sh
+rr add superhero < /tmp/heroes.txt
+#+END_SRC
+***** Add to an adjective
+#+BEGIN_SRC bash
+rr add -a fr Inutile
+#+END_SRC
+
+*** ~delete~
+Remove one or multiple entries from a theme.
+
+**** Aliases
+- ~remove~
+- ~del~
+
+**** Examples
+***** Remove from a theme
+#+BEGIN_SRC bash
+rr del superhero Batman
+#+END_SRC
+***** Remove from a list in a file
+#+BEGIN_SRC sh
+rr del superhero < /tmp/heroes.txt
+#+END_SRC
+***** Remove from an adjective
+#+BEGIN_SRC bash
+rr del -a fr Inutile
+#+END_SRC
+
+* Usage
+#+BEGIN_SRC sh
+random-ramble 0.3.0
+Cédric Da Fonseca <dafonseca.cedric@gmail.com>
+A simple random words generator
+
+USAGE:
+    rr [FLAGS] [OPTIONS] [pattern] [SUBCOMMAND]
+
+FLAGS:
+    -h, --help
+            Prints help information
+
+    -V, --version
+            Prints version information
+
+    -v, --verbose
+            -v:		INFO|WARN|ERROR
+            -vv:	INFO|WARN|ERROR|DEBUG
+            -vvv:	INFO|WARN|ERROR|DEBUG|TRACE
+
+OPTIONS:
+    -a, --adjectives <adjectives>...
+            A list of adjectives to be chosen from
+
+        --adjectives-path <adjectives-path>
+            Path to the adjectives files [env: RR_ADJS_PATH=~/Projects/Rust/random-ramble/dict/adjectives]
+            [default: ./dict/adjectives]
+    -n <number>
+            The length of the list to be returned [env: RR_NB_RESULT=]  [default: 10]
+
+    -T, --template <template>
+            Provide a template from which to generate words
+
+    -t, --themes <themes>...
+            A list of themes to be chosen from
+
+            Themes preceded by '!' will be excluded
+        --themes-path <themes-path>
+            Path to the themes files [env: RR_THEMES_PATH=~/Projects/Rust/random-ramble/dict/themes]  [default:
+            ./dict/themes]
+
+ARGS:
+    <pattern>
+            The pattern to start with
+
+
+SUBCOMMANDS:
+    add       Add entries to a theme, or create a new theme
+    delete    Delete entries from a theme [aliases: remove, del]
+    help      Prints this message or the help of the given subcommand(s)
+#+END_SRC
+
 * Configuration
-# How to configure this module, including common problems and how to address them.
+# How to configure this project, including common problems and how to address them.
+This project is configured via environment variables or by setting the desired
+values via the CLI.
+
+** General
+
+*** number
+The number of results to be generated.
+
+default value: 10
+
+**** Example
+***** Environment Variable
+#+BEGIN_SRC sh
+export RR_NB_RESULT=25
+#+END_SRC
+
+***** Command Line
+#+BEGIN_SRC sh
+rr -n 25 [...]
+#+END_SRC
+
+*** themes path
+The path to the themes files.
+
+default value: "./dict/themes"
+
+**** Example
+
+***** Environment Variable
+#+BEGIN_SRC sh
+export RR_THEMES_PATH="~/.local/random_ramble/themes"
+#+END_SRC
+
+***** Command Line
+#+BEGIN_SRC sh
+rr --themes-path="~/.local/random_ramble/themes" [...]
+#+END_SRC
+
+*** adjectives path
+The path to the adjectives files.
+
+default value: "./dict/adjectives"
+
+**** Example
+
+***** Environment Variable
+#+BEGIN_SRC sh
+export RR_ADJS_PATH="~/.local/random_ramble/adjectives"
+#+END_SRC
+
+***** Command Line
+#+BEGIN_SRC sh
+rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
+#+END_SRC
+
+
+* Examples
+** Pattern - starts with
+Generate random words with default parameters, for words starting with 'A':
+#+BEGIN_SRC bash
+rr a
+#+END_SRC
+output:
+#+BEGIN_SRC bash
+Awful All-father Hercules
+Abusive Abe Sapien
+Abnormal Ariel
+Awesome Airman
+Athletic Aegis
+Adorable All For One
+Awkward Adam Destine
+Abject Agent Mulder
+Aboriginal Amunet Black
+Able Aegeus
+#+END_SRC
+** Specify a length
+Generate 3 random words with default parameters, for words starting with 'A':
+#+BEGIN_SRC bash
+rr a -n 3
+#+END_SRC
+output:
+#+BEGIN_SRC bash
+Absorbed Ajax
+Abnormal Akron
+Angelic Alexander Anderson
+#+END_SRC
+** Specify a theme
+Generate 3 random words of theme 'animals' with default parameters, for words starting with 'A':
+#+BEGIN_SRC bash
+rr a -n 3 --themes animal
+#+END_SRC
+output:
+#+BEGIN_SRC bash
+Arrogant Aardvark
+Apprehensive Anteater
+Alive Antelope
+#+END_SRC
+** Exclude a theme
+Generate 3 random words of any available theme besides 'disney' with default parameters:
+#+BEGIN_SRC bash
+rr -n 3 --themes '!disney'
+#+END_SRC
+output:
+#+BEGIN_SRC bash
+Ambitious Dogfish
+Stormy Fironic
+Resourceful Magpie
+#+END_SRC
+** Specify a template
+Generate a template with random entries:
+#+BEGIN_SRC sh
+rr -T '{{ themes.male_name.0 }}, the {{adjs.superlative.0 | lower }} {{ adj | lower }} {{ themes.color.0 | lower }} {{ themes.videogame.0 }}' -n 4
+#+END_SRC
+output:
+#+BEGIN_SRC sh
+Alexander, the faintest mission-critical pink Peach
+Asher, the funniest condescending yellow Agent 47
+Thomas, the bloodiest tough white Vault Boy
+Mateo, the busiest gangsta tilleul Dovahkiin
+#+END_SRC
+** Generate random words for each themes (with ~fd~)
+#+BEGIN_SRC sh
+fd . -t f dict/themes --exec ./rr -t '{/}'
+#+END_SRC
 
 * Troubleshooting
 # Common issues and their solution, or places to look for help.

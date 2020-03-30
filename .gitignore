@@ -1,2 +1,4 @@
-/target
+**/target
 **/*.rs.bk
+**/rr
+dict/themes/others/word
