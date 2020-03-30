@@ -23,7 +23,6 @@ impl RandomRamble {
         adjs_path: &PathBuf,
         adjs: Vec<&str>,
         themes_path: &PathBuf,
-        // themes: Option<Vec<&str>>,
         themes: Vec<&str>,
     ) -> Result<Self, Error> {
         // if let Some(ref adjs) = adjs {
@@ -145,10 +144,7 @@ impl RandomRamble {
             .filter_map(Result::ok)
             .collect();
 
-        Ok(Self {
-            adjs,
-            themes,
-        })
+        Ok(Self { adjs, themes })
     }
 
     pub fn randomize(
@@ -213,11 +209,11 @@ impl RandomRamble {
                                     }
                                 }
                             })
-                                // .skip_while(|a| a.is_some())
-                                .skip_while(|a| a.is_none())
-                                // .take_while(|a| a.is_some())
-                                .flatten()
-                                .collect();
+                            // .skip_while(|a| a.is_some())
+                                                         .skip_while(|a| a.is_none())
+                            // .take_while(|a| a.is_some())
+                                                         .flatten()
+                                                         .collect();
 
 
                             debug!("rand_adj len: {}", rand_adj.len());
@@ -263,11 +259,9 @@ impl RandomRamble {
                             context.insert("theme", &rand_theme.choose(&mut rand::thread_rng()));
                         }
 
-                        // if re_adjs.is_match(template) {
                         if template.contains("adjs") {
                             context.insert("adjs", &adjs);
                         }
-                        // if re_themes.is_match(template) {
                         if template.contains("themes") {
                             context.insert("themes", &themes);
                         }
@@ -284,7 +278,6 @@ impl RandomRamble {
 
                 Ok(results)
             }
-
             None => {
                 let (adjs, themes): (Vec<_>, Vec<_>) = match pattern {
                     Some(pattern) => (
@@ -349,7 +342,7 @@ struct Type {
 }
 
 impl Type {
-    pub fn new(file: &DirEntry) -> Result<Self, Error> {
+    fn new(file: &DirEntry) -> Result<Self, Error> {
         let f = std::fs::File::open(file.path())?;
         let buf = BufReader::new(f);
         let entries = buf
@@ -373,7 +366,7 @@ impl Type {
         })
     }
 
-    pub fn entries(&self, pattern: Option<&str>) -> Vec<String> {
+    fn entries(&self, pattern: Option<&str>) -> Vec<String> {
         self.entries
             .iter()
             .filter(|e| match pattern {
@@ -384,14 +377,14 @@ impl Type {
             .collect::<Vec<String>>()
     }
 
-    pub fn random_entries(&self, pattern: Option<&str>, number: usize) -> Vec<String> {
+    fn random_entries(&self, pattern: Option<&str>, number: usize) -> Vec<String> {
         self.entries(pattern)
             .choose_multiple(&mut rand::thread_rng(), number)
             .map(|e| e.to_owned())
             .collect()
     }
 
-    pub fn random_entry(&self, pattern: Option<&str>) -> Result<String, Error> {
+    fn random_entry(&self, pattern: Option<&str>) -> Result<String, Error> {
         match self.entries(pattern).choose(&mut rand::thread_rng()) {
             Some(r) => Ok(r.to_string()),
             None => match pattern {
