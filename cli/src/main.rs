@@ -14,6 +14,7 @@ use random_ramble::RandomRamble;
 
 fn main() {
     let config: Config = Config::from_args();
+
     init_logger(config.verbose);
     debug!("config: {:#?}", config);
 
