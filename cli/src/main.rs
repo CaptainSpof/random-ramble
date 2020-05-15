@@ -4,9 +4,10 @@ extern crate log;
 use env_logger::{Builder, WriteStyle};
 use log::LevelFilter;
 
+// TODO: move over to clap 3
 use structopt::StructOpt;
 
-mod cmds;
+mod subcmds;
 mod config;
 
 use config::{Command, Config};
@@ -26,9 +27,9 @@ fn main() {
         adjs,
         &config.themes_path,
         themes
-        // config.themes
     ) {
         Ok(rr) => rr,
+        // TODO: use anyhow ?
         Err(e) => {
             error!("Crote, une erreur: {}", e);
             std::process::exit(1);
@@ -38,16 +39,16 @@ fn main() {
     match config.cmd {
         Some(Command::Add(c)) => {
             if c.adjs {
-                cmds::add(&config.adjectives_path, &c.theme, c.entries())
+                subcmds::add(&config.adjectives_path, &c.theme, c.entries())
             } else {
-                cmds::add(&config.themes_path, &c.theme, c.entries());
+                subcmds::add(&config.themes_path, &c.theme, c.entries());
             }
         }
         Some(Command::Delete(c)) => {
             if c.adjs {
-                cmds::delete(&config.adjectives_path, &c.theme, c.entries())
+                subcmds::delete(&config.adjectives_path, &c.theme, c.entries())
             } else {
-                cmds::delete(&config.themes_path, &c.theme, c.entries());
+                subcmds::delete(&config.themes_path, &c.theme, c.entries());
             }
         }
         None => {
