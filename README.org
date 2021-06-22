@@ -3,6 +3,16 @@
 #+SINCE:   {replace with next tagged release version}
 #+STARTUP: inlineimages nofold
 
+⚠ *Refactor in progess* ⚠
+
+#+begin_quote
+EWW! Your code is ugly!
+#+end_quote
+
+Yes, I know and I am very self consious about it! I'll eventually get good at writing Rust… Maybe.
+In the meantime, checkout the [[./todo.org][todo]]
+ list.
+
 * Table of Contents :TOC_3:noexport:
 - [[#description][Description]]
 - [[#installation][Installation]]
