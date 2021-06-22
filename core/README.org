@@ -1,0 +1,21 @@
+#+TITLE: Readme
+
+* RandomRamble's lib
+** How to use ?
+The core idea of RandomRamble's lib is to generate random outputs based on a serie of inputs.
+
+Current usage:
+#+begin_src rust
+let rr = match RandomRamble::new(
+    &config.adjectives_path,
+    adjs,
+    &config.themes_path,
+    themes
+) {
+    Ok(rr) => rr,
+    Err(e) => {
+        error!("Crote, une erreur: {}", e);
+        std::process::exit(1);
+    }
+};
+#+end_src
