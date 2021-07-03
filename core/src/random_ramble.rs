@@ -12,6 +12,117 @@ use walkdir::{DirEntry, WalkDir};
 
 use crate::{bail, error::Error};
 
+pub mod refactor {
+    use std::path::PathBuf;
+
+    #[derive(Debug, PartialEq)]
+    pub struct RandomRamble<'a> {
+        pub rambles: Vec<Ramble<'a>>,
+        pub template: Option<&'a str>,
+    }
+
+    impl<'a> RandomRamble<'a> {
+        pub fn new() -> Self {
+            Self::default()
+        }
+
+        pub fn with_adj(mut self, adj: Ramble<'a>) -> Self {
+            // REVIEW: Maybe we want to ensure variant before calling the function?
+            let adj = match adj.kind {
+                RambleKind::Adjective => adj,
+                _ => adj.with_kind(RambleKind::Adjective),
+            };
+
+            self.rambles.push(adj);
+            self
+        }
+
+
+        pub fn with_adjs(mut self, adjs: Vec<Ramble<'a>>) -> Self {
+            // REVIEW: Maybe we want to ensure variant before calling the function?
+            let adjs: Vec<Ramble> = adjs.into_iter().map(|adj| match adj.kind {
+                RambleKind::Adjective => adj,
+                _ => adj.with_kind(RambleKind::Adjective),
+            }).collect();
+
+            self.rambles.extend(adjs);
+            self
+        }
+
+        pub fn with_theme(mut self, theme: Ramble<'a>) -> Self {
+            // REVIEW: Maybe we want to ensure variant before calling the function?
+            let theme = match theme.kind {
+                RambleKind::Theme => theme,
+                _ => theme.with_kind(RambleKind::Theme),
+            };
+
+            self.rambles.push(theme);
+            self
+        }
+
+        pub fn with_themes(mut self, themes: Vec<Ramble<'a>>) -> Self {
+            // REVIEW: Maybe we want to ensure variant before calling the function?
+            let themes: Vec<Ramble> = themes.into_iter().map(|theme| match theme.kind {
+                RambleKind::Theme => theme,
+                _ => theme.with_kind(RambleKind::Theme),
+            }).collect();
+
+            self.rambles.extend(themes);
+            self
+        }
+
+        pub fn with_template(mut self, template: &'a str) -> Self {
+            self.template = Some(template);
+            self
+        }
+
+    }
+
+    impl Default for RandomRamble<'_> {
+        fn default() -> Self {
+            Self {
+                rambles: vec![],
+                template: None,
+            }
+        }
+    }
+
+    #[derive(Debug, PartialEq)]
+    pub struct Ramble<'a> {
+        pub kind: RambleKind,
+        pub value: &'a str,
+        pub file: Option<PathBuf>,
+    }
+
+    impl<'a> Ramble<'a> {
+        pub fn new(value: &'a str) -> Self {
+            Self {
+                value,
+                kind: RambleKind::Other,
+                file: None,
+            }
+        }
+
+        pub fn with_kind(mut self, kind: RambleKind) -> Self {
+            self.kind = kind;
+            self
+        }
+    }
+
+    impl<'a> From<&'a str> for Ramble<'a> {
+        fn from(value: &'a str) -> Self {
+            Self::new(value)
+        }
+    }
+
+    #[derive(Debug, PartialEq)]
+    pub enum RambleKind {
+        Adjective,
+        Theme,
+        Other,
+    }
+}
+
 #[derive(Debug)]
 pub struct RandomRamble {
     adjs: Vec<Type>,
@@ -25,46 +136,6 @@ impl RandomRamble {
         themes_path: &PathBuf,
         themes: Vec<&str>,
     ) -> Result<Self, Error> {
-        // if let Some(ref adjs) = adjs {
-        //     let adjs_path = adjs_path.to_str().expect("shit, that's my luck...");
-        //     let r: Vec<String> = adjs
-        //         .into_iter()
-        //         .filter(|a| !a.starts_with('!'))
-        //         .map(|a| {
-        //             if !Path::new(&format!("{}/{}", adjs_path, &a)).exists() {
-        //                 Some(a.to_owned())
-        //             } else {
-        //                 None
-        //             }
-        //         })
-        //         .flatten()
-        //         .collect();
-
-        //     if r.len() > 0 {
-        //         bail!("couldn't find file for adjective(s) {} in path {}, aborting", r.join(", "), adjs_path);
-        //     }
-        // };
-
-        // if let Some(ref themes) = themes {
-        //     let themes_path = themes_path.to_str().expect("shit, that's my luck...");
-        //     let r: Vec<String> = themes
-        //         .into_iter()
-        //         .filter(|t| !t.starts_with('!'))
-        //         .map(|t| {
-        //             if !Path::new(&format!("{}/{}", themes_path, &t)).exists() {
-        //                 Some(t.to_owned())
-        //             } else {
-        //                 None
-        //             }
-        //         })
-        //         .flatten()
-        //         .collect();
-
-        //     if r.len() > 0 {
-        //         bail!("couldn't find file for theme(s) {} in path {}, aborting", r.join(", "), themes_path);
-        //     }
-        // };
-
         let (excluded_adjs, adjs_path) = (
             adjs.iter()
                 .filter(|t| t.starts_with('!'))
@@ -285,16 +356,16 @@ impl RandomRamble {
                             .iter()
                             .filter(|a| {
                                 a.entries
-                                    .iter()
-                                    .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
+                                 .iter()
+                                 .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
                             })
                             .collect(),
                         self.themes
                             .iter()
                             .filter(|a| {
                                 a.entries
-                                    .iter()
-                                    .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
+                                 .iter()
+                                 .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
                             })
                             .collect(),
                     ),
@@ -302,32 +373,32 @@ impl RandomRamble {
                 };
 
                 Ok((0..number)
-                    .map(|_| {
-                        let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
-                            Some(ref a) => (&a.name, a.random_entry(pattern)?),
-                            None => {
-                                warn!("couldn\'t get random adjectives entries");
-                                bail!("\'chier")
-                            }
-                        };
-                        let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
-                            Some(ref t) => (&t.name, t.random_entry(pattern)?),
-                            None => {
-                                warn!("couldn't get random themes entries");
-                                bail!("'chier")
-                            }
-                        };
-                        if with_details {
-                            Ok(format!(
-                                "[ {:^12} | {:^12} ]\t\t{} {}",
-                                adj_name, theme_name, adj, theme
-                            ))
-                        } else {
-                            Ok(format!("{} {}", adj, theme))
-                        }
-                    })
-                    .filter_map(Result::ok)
-                    .collect())
+                   .map(|_| {
+                       let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
+                           Some(ref a) => (&a.name, a.random_entry(pattern)?),
+                           None => {
+                               warn!("couldn\'t get random adjectives entries");
+                               bail!("\'chier")
+                           }
+                       };
+                       let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
+                           Some(ref t) => (&t.name, t.random_entry(pattern)?),
+                           None => {
+                               warn!("couldn't get random themes entries");
+                               bail!("'chier")
+                           }
+                       };
+                       if with_details {
+                           Ok(format!(
+                               "[ {:^12} | {:^12} ]\t\t{} {}",
+                               adj_name, theme_name, adj, theme
+                           ))
+                       } else {
+                           Ok(format!("{} {}", adj, theme))
+                       }
+                   })
+                   .filter_map(Result::ok)
+                   .collect())
             }
         }
     }
