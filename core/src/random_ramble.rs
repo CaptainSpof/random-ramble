@@ -13,7 +13,9 @@ use walkdir::{DirEntry, WalkDir};
 use crate::{bail, error::Error};
 
 pub mod refactor {
-    use std::path::PathBuf;
+    use std::{fmt, path::PathBuf};
+
+    use tera::{Context, Error, Tera};
 
     #[derive(Debug, PartialEq)]
     pub struct RandomRamble<'a> {
@@ -76,6 +78,30 @@ pub mod refactor {
             self
         }
 
+        pub fn replace(self) -> Result<String, Error> {
+
+            let mut context = Context::new();
+
+            // self.rambles.into_iter().map
+            for r in self.rambles {
+                context.insert(r.kind.to_string(), r.value);
+            }
+
+            match self.template {
+                Some(template) => {
+                    Tera::one_off(template, &context, true)
+                },
+                None => {
+                    warn!("No template, using default");
+                    Ok("hihi".to_string())
+                }
+            }
+        }
+
+        fn set_context(self) -> Context {
+            unimplemented!()
+        }
+
     }
 
     impl Default for RandomRamble<'_> {
@@ -120,6 +146,17 @@ pub mod refactor {
         Adjective,
         Theme,
         Other,
+    }
+
+    impl fmt::Display for RambleKind {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            let s = match self {
+                &RambleKind::Adjective => "adj",
+                &RambleKind::Theme => "theme",
+                &RambleKind::Other => "other",
+            };
+            write!(f, "{}", s)
+        }
     }
 }
 
