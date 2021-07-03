@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use crate::*;
+use random_ramble::RandomRamble;
 
 #[test]
 fn init_default() {
-    let rr = RandomRamble_::default();
+    let rr = RandomRamble::default();
 
-    assert_eq!(rr, RandomRamble_{
+    assert_eq!(rr, RandomRamble{
         rambles: vec![],
         template: None
     });
@@ -22,10 +22,10 @@ fn init_with_adjs() {
             .build()
     ];
 
-    let rr = RandomRamble_::new()
+    let rr = RandomRamble::new()
         .with_adjs(adjs);
 
-    assert_eq!(rr, RandomRamble_{
+    assert_eq!(rr, RandomRamble{
         rambles: vec![
             Ramble_ {
                 kind: RambleKind_::Adjective,
@@ -41,10 +41,10 @@ fn init_with_adjs() {
 fn init_with_adj_from_string() {
     let adj = "Pretty".to_string();
 
-    let rr = RandomRamble_::new()
+    let rr = RandomRamble::new()
         .with_adj(adj.into());
 
-    assert_eq!(rr, RandomRamble_{
+    assert_eq!(rr, RandomRamble{
         rambles: vec![
             Ramble_ {
                 kind: RambleKind_::Adjective,
@@ -61,10 +61,10 @@ fn init_with_adjs_from_string() {
     let adj1 = "Kind".to_string();
     let adj2 = "Ruthless".to_string();
 
-    let rr = RandomRamble_::new()
+    let rr = RandomRamble::new()
         .with_adjs(vec![adj1.into(), adj2.into()]);
 
-    assert_eq!(rr, RandomRamble_{
+    assert_eq!(rr, RandomRamble{
         rambles: vec![
             Ramble_ {
                 kind: RambleKind_::Adjective,
@@ -88,10 +88,10 @@ fn init_with_adjs_from_path() {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.push("resources/tests/adjectives/");
 
-    let rr = RandomRamble_::new()
+    let rr = RandomRamble::new()
         .with_adjs_path(&path);
 
-    assert_eq!(rr, RandomRamble_ {
+    assert_eq!(rr, RandomRamble {
         rambles: vec![
             Ramble_ {
                 kind: RambleKind_::Adjective,
@@ -124,10 +124,10 @@ fn init_with_themes() {
             .build()
     ];
 
-    let rr = RandomRamble_::new()
+    let rr = RandomRamble::new()
         .with_themes(themes);
 
-    assert_eq!(rr, RandomRamble_{
+    assert_eq!(rr, RandomRamble{
         rambles: vec![
             Ramble_ {
                 kind: RambleKind_::Theme,
@@ -143,10 +143,10 @@ fn init_with_themes() {
 fn init_with_theme_from_string() {
     let theme = "Toto".to_string();
 
-    let rr = RandomRamble_::new()
+    let rr = RandomRamble::new()
         .with_theme(theme.into());
 
-    assert_eq!(rr, RandomRamble_{
+    assert_eq!(rr, RandomRamble{
         rambles: vec![
             Ramble_ {
                 kind: RambleKind_::Theme,
@@ -164,10 +164,10 @@ fn init_with_themes_from_path() {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.push("resources/tests/themes/");
 
-    let rr = RandomRamble_::new()
+    let rr = RandomRamble::new()
         .with_themes_path(&path);
 
-    assert_eq!(rr, RandomRamble_ {
+    assert_eq!(rr, RandomRamble {
         rambles: vec![
             Ramble_ {
                 kind: RambleKind_::Theme,
@@ -193,25 +193,11 @@ fn init_with_themes_from_path() {
 #[test]
 fn init_with_template() {
 
-    let rr = RandomRamble_::new()
+    let rr = RandomRamble::new()
         .with_template("A {{adj}} for {{theme}}".to_string());
 
-    assert_eq!(rr, RandomRamble_{
+    assert_eq!(rr, RandomRamble{
         rambles: vec![],
         template: Some("A {{adj}} for {{theme}}".to_string())
     });
-}
-
-#[test]
-fn template_replace() {
-    let adj = "Clever".to_string();
-    let theme = "Toto".to_string();
-
-    let r = RandomRamble_::new()
-        .with_template("A {{adj | lower }} {{theme}}".to_string())
-        .with_adj(adj.into())
-        .with_theme(theme.into())
-        .replace();
-
-    assert_eq!(r.unwrap(), "A clever Toto".to_string());
 }
