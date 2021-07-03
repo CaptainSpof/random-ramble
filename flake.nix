@@ -9,10 +9,10 @@
       pkgs = nixpkgs.legacyPackages."${system}";
       naersk-lib = naersk.lib."${system}";
       pkgBuildInputs = with pkgs; [
-          rustc
-          cargo
-          openssl
-          pkg-config
+        rustc
+        cargo
+        openssl
+        pkg-config
       ];
     in rec {
       # `nix build`
