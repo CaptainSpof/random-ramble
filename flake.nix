@@ -1,6 +1,7 @@
 {
   inputs = {
     utils.url = "github:numtide/flake-utils";
+    # TODO move to oxalica rust overlay ?
     naersk.url = "github:nmattia/naersk";
   };
 
