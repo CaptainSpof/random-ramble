@@ -6,19 +6,19 @@ use tera::{Context, Tera};
 
 use std::collections::BTreeMap;
 use std::io::{prelude::*, BufReader};
-// use std::path::Path;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{bail, error::Error};
 
 pub mod refactor {
-    use std::{fmt, path::PathBuf};
+    use std::{collections::HashMap, fmt::{self, Display}, path::PathBuf};
 
     use tera::{Context, Error, Tera};
 
     #[derive(Debug, PartialEq)]
     pub struct RandomRamble<'a> {
+        pub _rambles: HashMap<RambleKind<'a>, RambleValue<'a>>,
         pub rambles: Vec<Ramble<'a>>,
         pub template: Option<&'a str>,
     }
@@ -39,13 +39,15 @@ pub mod refactor {
             self
         }
 
-
         pub fn with_adjs(mut self, adjs: Vec<Ramble<'a>>) -> Self {
             // REVIEW: Maybe we want to ensure variant before calling the function?
-            let adjs: Vec<Ramble> = adjs.into_iter().map(|adj| match adj.kind {
-                RambleKind::Adjective => adj,
-                _ => adj.with_kind(RambleKind::Adjective),
-            }).collect();
+            let adjs: Vec<Ramble> = adjs
+                .into_iter()
+                .map(|adj| match adj.kind {
+                    RambleKind::Adjective => adj,
+                    _ => adj.with_kind(RambleKind::Adjective),
+                })
+                .collect();
 
             self.rambles.extend(adjs);
             self
@@ -64,10 +66,13 @@ pub mod refactor {
 
         pub fn with_themes(mut self, themes: Vec<Ramble<'a>>) -> Self {
             // REVIEW: Maybe we want to ensure variant before calling the function?
-            let themes: Vec<Ramble> = themes.into_iter().map(|theme| match theme.kind {
-                RambleKind::Theme => theme,
-                _ => theme.with_kind(RambleKind::Theme),
-            }).collect();
+            let themes: Vec<Ramble> = themes
+                .into_iter()
+                .map(|theme| match theme.kind {
+                    RambleKind::Theme => theme,
+                    _ => theme.with_kind(RambleKind::Theme),
+                })
+                .collect();
 
             self.rambles.extend(themes);
             self
@@ -78,44 +83,51 @@ pub mod refactor {
             self
         }
 
-        pub fn replace(self) -> Result<String, Error> {
-
-            let mut context = Context::new();
-
-            // self.rambles.into_iter().map
-            for r in self.rambles {
-                context.insert(r.kind.to_string(), r.value);
-            }
+        pub fn replace(&self) -> Result<String, Error> {
+            let context = self.set_context();
 
             match self.template {
-                Some(template) => {
-                    Tera::one_off(template, &context, true)
-                },
+                Some(template) => Tera::one_off(template, &context, true),
                 None => {
                     warn!("No template, using default");
-                    Ok("hihi".to_string())
+                    Tera::one_off("{{ adj }} {{ theme }}", &context, true)
                 }
             }
         }
 
-        fn set_context(self) -> Context {
-            unimplemented!()
+        fn set_context(&self) -> Context {
+            let mut context = Context::new();
+            self.rambles.iter().for_each(|r| {
+                context.insert(r.kind.to_string(), r.value);
+            });
+            context
         }
-
     }
 
     impl Default for RandomRamble<'_> {
         fn default() -> Self {
             Self {
                 rambles: vec![],
+                _rambles: HashMap::new(),
                 template: None,
             }
         }
     }
 
+    impl Display for RandomRamble<'_> {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            // TODO: handle error
+            let s = self.replace().unwrap_or("???".into());
+            write!(f, "{}", s)
+        }
+    }
+
+    #[derive(Debug, PartialEq)]
+    pub struct RambleValue<'a>(&'a str);
+
     #[derive(Debug, PartialEq)]
     pub struct Ramble<'a> {
-        pub kind: RambleKind,
+        pub kind: RambleKind<'a>,
         pub value: &'a str,
         pub file: Option<PathBuf>,
     }
@@ -124,12 +136,12 @@ pub mod refactor {
         pub fn new(value: &'a str) -> Self {
             Self {
                 value,
-                kind: RambleKind::Other,
+                kind: RambleKind::Other("other"),
                 file: None,
             }
         }
 
-        pub fn with_kind(mut self, kind: RambleKind) -> Self {
+        pub fn with_kind(mut self, kind: RambleKind<'a>) -> Self {
             self.kind = kind;
             self
         }
@@ -141,19 +153,19 @@ pub mod refactor {
         }
     }
 
-    #[derive(Debug, PartialEq)]
-    pub enum RambleKind {
+    #[derive(Debug, PartialEq, Eq, Hash)]
+    pub enum RambleKind<'a> {
         Adjective,
         Theme,
-        Other,
+        Other(&'a str),
     }
 
-    impl fmt::Display for RambleKind {
+    impl Display for RambleKind<'_> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             let s = match self {
                 &RambleKind::Adjective => "adj",
                 &RambleKind::Theme => "theme",
-                &RambleKind::Other => "other",
+                &RambleKind::Other(o) => o,
             };
             write!(f, "{}", s)
         }

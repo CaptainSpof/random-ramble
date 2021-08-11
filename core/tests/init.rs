@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use random_ramble::refactor::{Ramble, RambleKind, RandomRamble};
 
@@ -10,6 +10,7 @@ fn init_default() {
         rr,
         RandomRamble {
             rambles: vec![],
+            _rambles: HashMap::new(),
             template: None
         }
     );
@@ -39,6 +40,7 @@ fn init_with_adjs() {
                     file: None
                 },
             ],
+            _rambles: HashMap::new(),
             template: None
         }
     );
@@ -57,7 +59,8 @@ fn init_with_adj_from_string() {
                 kind: RambleKind::Adjective,
                 value: "Pretty",
                 file: None
-            },],
+            }],
+            _rambles: HashMap::new(),
             template: None
         }
     );
@@ -85,6 +88,7 @@ fn init_with_adjs_from_string() {
                     file: None
                 },
             ],
+            _rambles: HashMap::new(),
             template: None
         }
     );
@@ -124,44 +128,42 @@ fn init_with_adjs_from_string() {
 
 #[test]
 fn init_with_themes() {
+    let themes = vec![Ramble::new("King").with_kind(RambleKind::Theme)];
 
-    let themes = vec![
-        Ramble::new("King")
-            .with_kind(RambleKind::Theme)
-    ];
+    let rr = RandomRamble::new().with_themes(themes);
 
-    let rr = RandomRamble::new()
-        .with_themes(themes);
-
-    assert_eq!(rr, RandomRamble{
-        rambles: vec![
-            Ramble {
+    assert_eq!(
+        rr,
+        RandomRamble {
+            rambles: vec![Ramble {
                 kind: RambleKind::Theme,
                 value: "King",
                 file: None
-            },
-        ],
-        template: None
-    });
+            },],
+            _rambles: HashMap::new(),
+            template: None
+        }
+    );
 }
 
 #[test]
 fn init_with_theme_from_string() {
     let theme = "Toto";
 
-    let rr = RandomRamble::new()
-        .with_theme(theme.into());
+    let rr = RandomRamble::new().with_theme(theme.into());
 
-    assert_eq!(rr, RandomRamble{
-        rambles: vec![
-            Ramble {
+    assert_eq!(
+        rr,
+        RandomRamble {
+            rambles: vec![Ramble {
                 kind: RambleKind::Theme,
                 value: "Toto",
                 file: None
-            },
-        ],
-        template: None
-    });
+            },],
+            _rambles: HashMap::new(),
+            template: None
+        }
+    );
 }
 
 // #[test]
@@ -198,12 +200,14 @@ fn init_with_theme_from_string() {
 
 #[test]
 fn init_with_template() {
+    let rr = RandomRamble::new().with_template("A {{adj}} for {{theme}}");
 
-    let rr = RandomRamble::new()
-        .with_template("A {{adj}} for {{theme}}");
-
-    assert_eq!(rr, RandomRamble{
-        rambles: vec![],
-        template: Some("A {{adj}} for {{theme}}")
-    });
+    assert_eq!(
+        rr,
+        RandomRamble {
+            rambles: vec![],
+            _rambles: HashMap::new(),
+            template: Some("A {{adj}} for {{theme}}")
+        }
+    );
 }
