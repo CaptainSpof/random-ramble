@@ -6,21 +6,45 @@ use tera::{Context, Tera};
 
 use std::collections::BTreeMap;
 use std::io::{prelude::*, BufReader};
-// use std::path::Path;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{bail, error::Error};
 
 pub mod refactor {
-    use std::{fmt, path::PathBuf};
 
-    use tera::{Context, Error, Tera};
+    use serde::Serialize;
+    use std::{
+        collections::HashMap,
+        fmt::{self, Display},
+        path::PathBuf,
+    };
 
+    use rand::Rng;
+    use tera::{Context, Error, Tera, Value};
+
+    /// The struct that holds the collection of `rambles` and its template.
+    // TODO fields shouldn't be pub
     #[derive(Debug, PartialEq)]
     pub struct RandomRamble<'a> {
+        // FIXME: how to use `T` for key ?
+        // pub _rambles: HashMap<RambleKind<'a>, Vec<&'a str>>,
+        pub _rambles: HashMap<String, Vec<&'a str>>,
         pub rambles: Vec<Ramble<'a>>,
         pub template: Option<&'a str>,
+        pub context: Option<Context>,
+    }
+
+    pub fn random_filter(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
+        // let v = value.as_array().unwrap().get(0).unwrap();
+        let values = value
+            .as_array()
+            .expect("must provide values alongside random");
+
+        let rng = rand::thread_rng().gen_range(0, values.len());
+        let val = values[rng].to_owned();
+
+        Ok(val)
     }
 
     impl<'a> RandomRamble<'a> {
@@ -29,6 +53,7 @@ pub mod refactor {
         }
 
         pub fn with_adj(mut self, adj: Ramble<'a>) -> Self {
+            self._rambles.insert(RambleKind::Adjective.to_string(), vec![adj.value]);
             // REVIEW: Maybe we want to ensure variant before calling the function?
             let adj = match adj.kind {
                 RambleKind::Adjective => adj,
@@ -39,19 +64,23 @@ pub mod refactor {
             self
         }
 
-
         pub fn with_adjs(mut self, adjs: Vec<Ramble<'a>>) -> Self {
+            self._rambles.insert(RambleKind::Adjective.to_string(), adjs.iter().map(|t| t.value).collect());
             // REVIEW: Maybe we want to ensure variant before calling the function?
-            let adjs: Vec<Ramble> = adjs.into_iter().map(|adj| match adj.kind {
-                RambleKind::Adjective => adj,
-                _ => adj.with_kind(RambleKind::Adjective),
-            }).collect();
+            let adjs: Vec<Ramble> = adjs
+                .into_iter()
+                .map(|adj| match adj.kind {
+                    RambleKind::Adjective => adj,
+                    _ => adj.with_kind(RambleKind::Adjective),
+                })
+                .collect();
 
             self.rambles.extend(adjs);
             self
         }
 
         pub fn with_theme(mut self, theme: Ramble<'a>) -> Self {
+            self._rambles.insert(RambleKind::Theme.to_string(), vec![theme.value]);
             // REVIEW: Maybe we want to ensure variant before calling the function?
             let theme = match theme.kind {
                 RambleKind::Theme => theme,
@@ -63,11 +92,15 @@ pub mod refactor {
         }
 
         pub fn with_themes(mut self, themes: Vec<Ramble<'a>>) -> Self {
+            self._rambles.insert(RambleKind::Theme.to_string(), themes.iter().map(|t| t.value).collect());
             // REVIEW: Maybe we want to ensure variant before calling the function?
-            let themes: Vec<Ramble> = themes.into_iter().map(|theme| match theme.kind {
-                RambleKind::Theme => theme,
-                _ => theme.with_kind(RambleKind::Theme),
-            }).collect();
+            let themes: Vec<Ramble> = themes
+                .into_iter()
+                .map(|theme| match theme.kind {
+                    RambleKind::Theme => theme,
+                    _ => theme.with_kind(RambleKind::Theme),
+                })
+                .collect();
 
             self.rambles.extend(themes);
             self
@@ -78,44 +111,69 @@ pub mod refactor {
             self
         }
 
-        pub fn replace(self) -> Result<String, Error> {
+        pub fn with_context(mut self, context: Context) -> Self {
+            self.context = Some(context);
+            self
+        }
 
-            let mut context = Context::new();
+        pub fn replace(&self) -> Result<String, Error> {
+            let mut tera = Tera::default();
+            tera.register_filter("rr", random_filter);
 
-            // self.rambles.into_iter().map
-            for r in self.rambles {
-                context.insert(r.kind.to_string(), r.value);
-            }
+            let context = match self.context {
+                Some(ref context) => context.clone(),
+                None => self.set_context(),
+            };
+            dbg!(&context);
 
             match self.template {
                 Some(template) => {
-                    Tera::one_off(template, &context, true)
-                },
+                    tera.add_raw_template("rr", template).unwrap();
+                    tera.render("rr", &context)
+                }
                 None => {
                     warn!("No template, using default");
-                    Ok("hihi".to_string())
+                    // Tera::one_off("A {{ adj | nth(n=get_random(end=2)) }} {{ theme | nth(n=0) }}", &context, true)
+                    tera.add_raw_template("rr", "{{ adj | rr }} {{ theme | rr }}")?;
+                    tera.render("rr", &context)
                 }
             }
         }
 
-        fn set_context(self) -> Context {
-            unimplemented!()
-        }
+        /// REVIEW: Randomness should happen when building the context ?
+        fn set_context(&self) -> Context {
+            // FIXME that's a lotta unwrap and clone there, buddy.
+            let context = Context::from_serialize(self._rambles.clone()).unwrap();
 
+            context
+        }
     }
 
     impl Default for RandomRamble<'_> {
         fn default() -> Self {
             Self {
                 rambles: vec![],
+                _rambles: HashMap::new(),
                 template: None,
+                context: None,
             }
         }
     }
 
+    impl Display for RandomRamble<'_> {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            // TODO: handle error
+            let s = self.replace().unwrap_or("???".into());
+            write!(f, "{}", s)
+        }
+    }
+
+    #[derive(Debug, PartialEq, Serialize)]
+    pub struct RambleValue<'a>(&'a str);
+
     #[derive(Debug, PartialEq)]
     pub struct Ramble<'a> {
-        pub kind: RambleKind,
+        pub kind: RambleKind<'a>,
         pub value: &'a str,
         pub file: Option<PathBuf>,
     }
@@ -124,12 +182,12 @@ pub mod refactor {
         pub fn new(value: &'a str) -> Self {
             Self {
                 value,
-                kind: RambleKind::Other,
+                kind: RambleKind::Other("other"),
                 file: None,
             }
         }
 
-        pub fn with_kind(mut self, kind: RambleKind) -> Self {
+        pub fn with_kind(mut self, kind: RambleKind<'a>) -> Self {
             self.kind = kind;
             self
         }
@@ -141,19 +199,19 @@ pub mod refactor {
         }
     }
 
-    #[derive(Debug, PartialEq)]
-    pub enum RambleKind {
+    #[derive(Serialize, Debug, PartialEq, Eq, Hash, Clone)]
+    pub enum RambleKind<'a> {
         Adjective,
         Theme,
-        Other,
+        Other(&'a str),
     }
 
-    impl fmt::Display for RambleKind {
+    impl Display for RambleKind<'_> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             let s = match self {
                 &RambleKind::Adjective => "adj",
                 &RambleKind::Theme => "theme",
-                &RambleKind::Other => "other",
+                &RambleKind::Other(o) => o,
             };
             write!(f, "{}", s)
         }
