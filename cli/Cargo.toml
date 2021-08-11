@@ -12,4 +12,4 @@ random-ramble = { path = "../core" }
 structopt = "0.3"
 serde = { version = "1.0.101", features = ["derive"] }
 log = "0.4"
-env_logger = "0.7"
+env_logger = "0.9"
