@@ -1,40 +1,39 @@
 {
+  description = "A devShell example";
+
   inputs = {
-    utils.url = "github:numtide/flake-utils";
-    naersk.url = "github:nmattia/naersk";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, utils, naersk }:
-    utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages."${system}";
-      naersk-lib = naersk.lib."${system}";
-      pkgBuildInputs = with pkgs; [
-        rustc
-        cargo
-        openssl
-        pkg-config
-      ];
-    in rec {
-      # `nix build`
-      packages.random-ramble = naersk-lib.buildPackage {
-        pname = "random-ramble";
-        root = ./.;
-        nativeBuildInputs = pkgBuildInputs;
-      };
-      defaultPackage = packages.random-ramble;
+  outputs = { self, nixpkgs, rust-overlay, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pname = "rr";
+        overlays = [ (import rust-overlay) ];
+        pkgs = import nixpkgs { inherit system overlays; };
+        rustc-version = "latest";
+        rust-linux = pkgs.rust-bin.stable.${rustc-version}.default;
+      in {
+        devShell = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            # dev
+            lolcat
+            rust-analyzer
+            cargo-outdated
+            # build
+            glibc
+            openssl
+            pkgconfig
+            rust-linux
+          ];
 
-      # `nix run`
-      apps.random-ramble = utils.lib.mkApp {
-        drv = packages.random-ramble;
-      };
-      defaultApp = apps.random-ramble;
 
-      # `nix develop`
-      devShell = pkgs.mkShell {
-        nativeBuildInputs = pkgBuildInputs ++ (with pkgs; [
-          rust-analyzer
-          cargo-outdated
-        ]);
-      };
-    });
+          shellHook = ''
+            echo "Welcome to ${pname} !" | lolcat
+            [ ! -f ./target/debug/${pname} ] && cargo build ; ln -sf ./target/debug/${pname} rr
+          '';
+        };
+      });
 }
