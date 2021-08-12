@@ -1,9 +1,7 @@
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
-
     use maplit::hashmap;
-    use random_ramble::refactor::{RambleKind, RandomRamble};
+    use random_ramble::refactor::{RambleKind, RambleValues, RandomRamble};
 
     #[test]
     fn init_default() {
@@ -13,7 +11,7 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: HashMap::new(),
+                _rambles: RambleValues::default(),
                 template: None,
                 context: None,
             }
@@ -22,10 +20,6 @@ mod test {
 
     #[test]
     fn init_with_adjs() {
-        // let adjs = vec![
-        //     Ramble::new("Happy").with_kind(RambleKind::Adjective),
-        //     Ramble::new("Sad").with_kind(RambleKind::Adjective),
-        // ];
         let adjs = vec![
             "Happy",
             "Sad"
@@ -37,9 +31,7 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: hashmap! {
-                    RambleKind::Adjective => vec!["Happy", "Sad"],
-                },
+                _rambles: RambleValues(hashmap!{RambleKind::Adjective => vec!["Happy", "Sad"]}),
                 template: None,
                 context: None,
             }
@@ -56,9 +48,9 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: hashmap! {
+                _rambles: RambleValues(hashmap! {
                     RambleKind::Adjective => vec!["Pretty"],
-                },
+                }),
                 template: None,
                 context: None,
             }
@@ -76,9 +68,9 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: hashmap! {
+                _rambles: RambleValues(hashmap! {
                     RambleKind::Adjective => vec!["Kind", "Ruthless"],
-                },
+                }),
                 template: None,
                 context: None,
             }
@@ -119,7 +111,6 @@ mod test {
 
     #[test]
     fn init_with_themes() {
-        // let themes = vec![Ramble::new("King").with_kind(RambleKind::Theme)];
         let themes = vec!["King"];
 
         let rr = RandomRamble::new().with_themes(themes);
@@ -128,9 +119,9 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: hashmap! {
+                _rambles: RambleValues(hashmap! {
                     RambleKind::Theme => vec!["King"],
-                },
+                }),
                 template: None,
                 context: None,
             }
@@ -147,9 +138,9 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: hashmap! {
+                _rambles: RambleValues(hashmap! {
                     RambleKind::Theme => vec!["Toto"],
-                },
+                }),
                 template: None,
                 context: None,
             }
@@ -158,7 +149,6 @@ mod test {
 
     #[test]
     fn init_with_others() {
-        // let others = vec![Ramble::new("🦀").with_kind(RambleKind::Other("emoji"))];
         let others = vec!["🦀"];
 
         let rr = RandomRamble::new().with_others("emoji", others);
@@ -167,9 +157,9 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: hashmap! {
+                _rambles: RambleValues(hashmap! {
                     RambleKind::Other("emoji") => vec!["🦀"],
-                },
+                }),
                 template: None,
                 context: None,
             }
@@ -186,9 +176,9 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: hashmap! {
+                _rambles: RambleValues(hashmap! {
                     RambleKind::Other("emoji") => vec!["🦀"],
-                },
+                }),
                 template: None,
                 context: None,
             }
@@ -236,7 +226,7 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: HashMap::new(),
+                _rambles: RambleValues::default(),
                 template: Some("A {{adj}} for {{theme}}"),
                 context: None,
             }

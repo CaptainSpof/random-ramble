@@ -62,7 +62,7 @@ mod test {
             }
         };
         // TODO: find better way to test randomness
-        assert_eq!(r, "Clever 🦀");
-        // assert_eq!(r.to_string().len(), "Clever 🦀".len());
+        // assert_eq!(r, "Clever 🦀");
+        assert_eq!(r.to_string().len(), "Clever 🦀".len());
     }
 }

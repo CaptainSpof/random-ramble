@@ -25,12 +25,12 @@ pub mod refactor {
     use rand::Rng;
     use tera::{Context, Error, Tera, Value};
 
-    #[derive(Deserialize, Debug, PartialEq)]
-    // struct RambleV<'a>(HashMap<RambleKind<'a>, Vec<&'a str>>);
-    pub struct RambleV(HashMap<RambleKind, Vec<String>>);
-
-    // impl Serialize for RambleV<'_> {
-    impl Serialize for RambleV {
+    #[derive(Deserialize, Debug, Default, PartialEq)]
+    pub struct RambleValues<'a>(
+        #[serde(borrow)]
+        pub HashMap<RambleKind<'a>, Vec<&'a str>>
+    );
+    impl<'a> Serialize for &'a RambleValues<'_> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
@@ -48,10 +48,7 @@ pub mod refactor {
     #[derive(Debug, PartialEq)]
     pub struct RandomRamble<'a> {
         // FIXME: how to use `T` for key ?
-        // pub _rambles: HashMap<RambleKind<'a>, Vec<&'a str>>,
-        // pub _rambles: RambleV<'a>,
-        pub _rambles: RambleV,
-        // pub _rambles: HashMap<String, Vec<&'a str>>,
+        pub _rambles: RambleValues<'a>,
         pub rambles: Vec<Ramble<'a>>,
         pub template: Option<&'a str>,
         pub context: Option<Context>,
@@ -75,7 +72,7 @@ pub mod refactor {
         }
 
         pub fn with_ramble(mut self, ramble: Ramble<'a>) -> Self {
-            self._rambles.0.insert(ramble.kind, vec![ramble.value.into()]);
+            self._rambles.0.insert(ramble.kind, vec![ramble.value]);
             // self.rambles.push(&ramble);
             self
         }
@@ -88,27 +85,32 @@ pub mod refactor {
         }
 
         pub fn with_adj(mut self, value: &'a str) -> Self {
-            self._rambles.0.insert(RambleKind::Adjective, vec![value.into()]);
+            self._rambles.0.insert(RambleKind::Adjective, vec![value]);
             self
         }
 
         pub fn with_adjs(mut self, values: Vec<&'a str>) -> Self {
-            self._rambles.0.insert(RambleKind::Adjective, values.iter().map(|v| v.to_string()).collect());
+            self._rambles.0.insert(RambleKind::Adjective, values);
             self
         }
 
         pub fn with_theme(mut self, value: &'a str) -> Self {
-            self._rambles.0.insert(RambleKind::Theme, vec![value.into()]);
+            self._rambles.0.insert(RambleKind::Theme, vec![value]);
             self
         }
 
         pub fn with_themes(mut self, values: Vec<&'a str>) -> Self {
-            self._rambles.0.insert(RambleKind::Theme, values.iter().map(|v| v.to_string()).collect());
+            self._rambles.0.insert(RambleKind::Theme, values);
+            self
+        }
+
+        pub fn with_other(mut self, kind: &'a str, value: &'a str) -> Self {
+            self._rambles.0.insert(RambleKind::Other(kind), vec![value]);
             self
         }
 
         pub fn with_others(mut self, kind: &'a str, values: Vec<&'a str>) -> Self {
-            self._rambles.0.insert(kind.into(), values.iter().map(|v| v.to_string()).collect());
+            self._rambles.0.insert(kind.into(), values);
             self
         }
 
@@ -127,6 +129,7 @@ pub mod refactor {
             tera.register_filter("rr", random_filter);
 
             let context = match self.context {
+                // FIXME can I avoid to clone ?
                 Some(ref context) => context.clone(),
                 None => self.set_context()?,
             };
@@ -154,7 +157,7 @@ pub mod refactor {
         fn default() -> Self {
             Self {
                 rambles: vec![],
-                _rambles: RambleV(HashMap::new()),
+                _rambles: RambleValues(HashMap::new()),
                 template: None,
                 context: None,
             }
@@ -169,13 +172,9 @@ pub mod refactor {
         }
     }
 
-    #[derive(Debug, PartialEq, Serialize)]
-    pub struct RambleValue<'a>(&'a str);
-
     #[derive(Debug, PartialEq)]
     pub struct Ramble<'a> {
-        // pub kind: RambleKind<'a>,
-        pub kind: RambleKind,
+        pub kind: RambleKind<'a>,
         pub value: &'a str,
         pub file: Option<PathBuf>,
     }
@@ -189,8 +188,7 @@ pub mod refactor {
             }
         }
 
-        // pub fn with_kind(mut self, kind: RambleKind<'a>) -> Self {
-        pub fn with_kind(mut self, kind: RambleKind) -> Self {
+        pub fn with_kind(mut self, kind: RambleKind<'a>) -> Self {
             self.kind = kind;
             self
         }
@@ -203,33 +201,30 @@ pub mod refactor {
     }
 
     #[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Hash, Clone)]
-    // pub enum RambleKind<'a> {
-    pub enum RambleKind {
+    pub enum RambleKind<'a> {
+    // pub enum RambleKind {
         Adjective,
         Theme,
-        Other(String),
+        Other(&'a str),
     }
 
-    // impl Display for RambleKind<'_> {
-    impl Display for RambleKind {
+    impl<'a> Display for RambleKind<'a> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             let s = match self {
-                &RambleKind::Adjective => "adj".to_string(),
-                &RambleKind::Theme => "theme".to_string(),
-                &RambleKind::Other(ref o) => o.to_string(),
+                &RambleKind::Adjective => "adj",
+                &RambleKind::Theme => "theme",
+                &RambleKind::Other(ref o) => o,
             };
             write!(f, "{}", s)
         }
     }
 
-    // impl<'a> From<&'a str> for RambleKind<'a> {
-    impl From<&str> for RambleKind {
-        // fn from(source: &'a str) -> Self {
-        fn from(source: &str) -> Self {
+    impl<'a> From<&'a str> for RambleKind<'a> {
+        fn from(source: &'a str) -> Self {
             match source {
                 "adj" => Self::Adjective,
                 "theme" => Self::Theme,
-                other => Self::Other(other.to_string())
+                other => Self::Other(other)
             }
         }
     }
