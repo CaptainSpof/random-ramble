@@ -6,7 +6,7 @@ use tera::{Context, Tera};
 
 use std::collections::BTreeMap;
 use std::io::{prelude::*, BufReader};
-use std::path::PathBuf;
+use std::path::Path;
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{bail, error::Error};
@@ -142,6 +142,7 @@ pub mod refactor {
                 }
                 None => {
                     warn!("No template, using default");
+                    // TODO make filter implicit
                     tera.add_raw_template("rr", "{{ adj | rr }} {{ theme | rr }}")?;
                     tera.render("rr", &context)
                 }
@@ -167,7 +168,7 @@ pub mod refactor {
     impl Display for RandomRamble<'_> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             // TODO: handle error
-            let s = self.replace().unwrap_or("???".into());
+            let s = self.replace().unwrap_or_else(|_| "???".into());
             write!(f, "{}", s)
         }
     }
@@ -183,7 +184,7 @@ pub mod refactor {
         pub fn new(value: &'a str) -> Self {
             Self {
                 value,
-                kind: RambleKind::Other("other".into()),
+                kind: RambleKind::Other("other"),
                 file: None,
             }
         }
@@ -211,9 +212,9 @@ pub mod refactor {
     impl<'a> Display for RambleKind<'a> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             let s = match self {
-                &RambleKind::Adjective => "adj",
-                &RambleKind::Theme => "theme",
-                &RambleKind::Other(ref o) => o,
+                RambleKind::Adjective => "adj",
+                RambleKind::Theme => "theme",
+                RambleKind::Other(o) => o,
             };
             write!(f, "{}", s)
         }
@@ -240,9 +241,9 @@ pub struct RandomRamble {
 
 impl RandomRamble {
     pub fn new(
-        adjs_path: &PathBuf,
+        adjs_path: &Path,
         adjs: Vec<&str>,
-        themes_path: &PathBuf,
+        themes_path: &Path,
         themes: Vec<&str>,
     ) -> Result<Self, Error> {
         let (excluded_adjs, adjs_path) = (
@@ -315,7 +316,7 @@ impl RandomRamble {
                 let theme_name: &str = &format!("!{}", theme_file_name);
 
                 if !excluded_themes.is_empty() {
-                    !excluded_themes.contains(&&theme_name)
+                    !excluded_themes.contains(&theme_name)
                 } else {
                     themes.contains(&theme_file_name)
                 }
@@ -484,14 +485,14 @@ impl RandomRamble {
                 Ok((0..number)
                    .map(|_| {
                        let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
-                           Some(ref a) => (&a.name, a.random_entry(pattern)?),
+                           Some(a) => (&a.name, a.random_entry(pattern)?),
                            None => {
                                warn!("couldn\'t get random adjectives entries");
                                bail!("\'chier")
                            }
                        };
                        let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
-                           Some(ref t) => (&t.name, t.random_entry(pattern)?),
+                           Some(t) => (&t.name, t.random_entry(pattern)?),
                            None => {
                                warn!("couldn't get random themes entries");
                                bail!("'chier")
@@ -527,7 +528,6 @@ impl Type {
         let buf = BufReader::new(f);
         let entries = buf
             .lines()
-            .map(|l| l)
             .filter_map(Result::ok)
             .collect::<Vec<String>>();
         let name = match file.file_name().to_str() {
@@ -550,7 +550,7 @@ impl Type {
         self.entries
             .iter()
             .filter(|e| match pattern {
-                Some(ref p) => e.to_lowercase().starts_with(&p.to_lowercase()),
+                Some(p) => e.to_lowercase().starts_with(&p.to_lowercase()),
                 None => true,
             })
             .cloned()
