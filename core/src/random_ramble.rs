@@ -13,7 +13,9 @@ use crate::{bail, error::Error};
 
 pub mod refactor {
 
-    use serde::Serialize;
+    use serde::{Serialize, Deserialize};
+    use serde::ser::{Serializer, SerializeMap};
+
     use std::{
         collections::HashMap,
         fmt::{self, Display},
@@ -23,23 +25,40 @@ pub mod refactor {
     use rand::Rng;
     use tera::{Context, Error, Tera, Value};
 
+    #[derive(Deserialize, Debug, Default, PartialEq)]
+    pub struct RambleValues<'a>(
+        #[serde(borrow)]
+        pub HashMap<RambleKind<'a>, Vec<&'a str>>
+    );
+    impl<'a> Serialize for &'a RambleValues<'_> {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            let mut seq = serializer.serialize_map(Some(self.0.len()))?;
+            for (k, v) in &self.0 {
+                seq.serialize_entry(&k.to_string(), &v)?;
+            }
+            seq.end()
+        }
+    }
+
     /// The struct that holds the collection of `rambles` and its template.
     // TODO fields shouldn't be pub
     #[derive(Debug, PartialEq)]
     pub struct RandomRamble<'a> {
         // FIXME: how to use `T` for key ?
-        // pub _rambles: HashMap<RambleKind<'a>, Vec<&'a str>>,
-        pub _rambles: HashMap<String, Vec<&'a str>>,
+        pub _rambles: RambleValues<'a>,
         pub rambles: Vec<Ramble<'a>>,
         pub template: Option<&'a str>,
         pub context: Option<Context>,
     }
 
     pub fn random_filter(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
-        // let v = value.as_array().unwrap().get(0).unwrap();
         let values = value
             .as_array()
             .expect("must provide values alongside random");
+        dbg!(values);
 
         let rng = rand::thread_rng().gen_range(0..values.len());
         let val = values[rng].to_owned();
@@ -52,57 +71,46 @@ pub mod refactor {
             Self::default()
         }
 
-        pub fn with_adj(mut self, adj: Ramble<'a>) -> Self {
-            self._rambles.insert(RambleKind::Adjective.to_string(), vec![adj.value]);
-            // REVIEW: Maybe we want to ensure variant before calling the function?
-            let adj = match adj.kind {
-                RambleKind::Adjective => adj,
-                _ => adj.with_kind(RambleKind::Adjective),
-            };
-
-            self.rambles.push(adj);
+        pub fn with_ramble(mut self, ramble: Ramble<'a>) -> Self {
+            self._rambles.0.insert(ramble.kind, vec![ramble.value]);
+            // self.rambles.push(&ramble);
             self
         }
 
-        pub fn with_adjs(mut self, adjs: Vec<Ramble<'a>>) -> Self {
-            self._rambles.insert(RambleKind::Adjective.to_string(), adjs.iter().map(|t| t.value).collect());
-            // REVIEW: Maybe we want to ensure variant before calling the function?
-            let adjs: Vec<Ramble> = adjs
-                .into_iter()
-                .map(|adj| match adj.kind {
-                    RambleKind::Adjective => adj,
-                    _ => adj.with_kind(RambleKind::Adjective),
-                })
-                .collect();
-
-            self.rambles.extend(adjs);
+        pub fn with_rambles(mut self, rambles: Vec<Ramble<'a>>) -> Self {
+            // FIXME kind can vary
+            // self._rambles.insert(, rambles.iter().map(|t| t.value).collect());
+            self.rambles.extend(rambles);
             self
         }
 
-        pub fn with_theme(mut self, theme: Ramble<'a>) -> Self {
-            self._rambles.insert(RambleKind::Theme.to_string(), vec![theme.value]);
-            // REVIEW: Maybe we want to ensure variant before calling the function?
-            let theme = match theme.kind {
-                RambleKind::Theme => theme,
-                _ => theme.with_kind(RambleKind::Theme),
-            };
-
-            self.rambles.push(theme);
+        pub fn with_adj(mut self, value: &'a str) -> Self {
+            self._rambles.0.insert(RambleKind::Adjective, vec![value]);
             self
         }
 
-        pub fn with_themes(mut self, themes: Vec<Ramble<'a>>) -> Self {
-            self._rambles.insert(RambleKind::Theme.to_string(), themes.iter().map(|t| t.value).collect());
-            // REVIEW: Maybe we want to ensure variant before calling the function?
-            let themes: Vec<Ramble> = themes
-                .into_iter()
-                .map(|theme| match theme.kind {
-                    RambleKind::Theme => theme,
-                    _ => theme.with_kind(RambleKind::Theme),
-                })
-                .collect();
+        pub fn with_adjs(mut self, values: Vec<&'a str>) -> Self {
+            self._rambles.0.insert(RambleKind::Adjective, values);
+            self
+        }
 
-            self.rambles.extend(themes);
+        pub fn with_theme(mut self, value: &'a str) -> Self {
+            self._rambles.0.insert(RambleKind::Theme, vec![value]);
+            self
+        }
+
+        pub fn with_themes(mut self, values: Vec<&'a str>) -> Self {
+            self._rambles.0.insert(RambleKind::Theme, values);
+            self
+        }
+
+        pub fn with_other(mut self, kind: &'a str, value: &'a str) -> Self {
+            self._rambles.0.insert(RambleKind::Other(kind), vec![value]);
+            self
+        }
+
+        pub fn with_others(mut self, kind: &'a str, values: Vec<&'a str>) -> Self {
+            self._rambles.0.insert(kind.into(), values);
             self
         }
 
@@ -121,31 +129,27 @@ pub mod refactor {
             tera.register_filter("rr", random_filter);
 
             let context = match self.context {
+                // FIXME can I avoid to clone ?
                 Some(ref context) => context.clone(),
-                None => self.set_context(),
+                None => self.set_context()?,
             };
             dbg!(&context);
 
             match self.template {
                 Some(template) => {
-                    tera.add_raw_template("rr", template).unwrap();
+                    tera.add_raw_template("rr", template)?;
                     tera.render("rr", &context)
                 }
                 None => {
                     warn!("No template, using default");
-                    // Tera::one_off("A {{ adj | nth(n=get_random(end=2)) }} {{ theme | nth(n=0) }}", &context, true)
                     tera.add_raw_template("rr", "{{ adj | rr }} {{ theme | rr }}")?;
                     tera.render("rr", &context)
                 }
             }
         }
 
-        /// REVIEW: Randomness should happen when building the context ?
-        fn set_context(&self) -> Context {
-            // FIXME that's a lotta unwrap and clone there, buddy.
-            let context = Context::from_serialize(self._rambles.clone()).unwrap();
-
-            context
+        fn set_context(&self) -> Result<Context, Error> {
+            Context::from_serialize(&self._rambles)
         }
     }
 
@@ -153,7 +157,7 @@ pub mod refactor {
         fn default() -> Self {
             Self {
                 rambles: vec![],
-                _rambles: HashMap::new(),
+                _rambles: RambleValues(HashMap::new()),
                 template: None,
                 context: None,
             }
@@ -168,9 +172,6 @@ pub mod refactor {
         }
     }
 
-    #[derive(Debug, PartialEq, Serialize)]
-    pub struct RambleValue<'a>(&'a str);
-
     #[derive(Debug, PartialEq)]
     pub struct Ramble<'a> {
         pub kind: RambleKind<'a>,
@@ -182,7 +183,7 @@ pub mod refactor {
         pub fn new(value: &'a str) -> Self {
             Self {
                 value,
-                kind: RambleKind::Other("other"),
+                kind: RambleKind::Other("other".into()),
                 file: None,
             }
         }
@@ -199,23 +200,36 @@ pub mod refactor {
         }
     }
 
-    #[derive(Serialize, Debug, PartialEq, Eq, Hash, Clone)]
+    #[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Hash, Clone)]
     pub enum RambleKind<'a> {
+    // pub enum RambleKind {
         Adjective,
         Theme,
         Other(&'a str),
     }
 
-    impl Display for RambleKind<'_> {
+    impl<'a> Display for RambleKind<'a> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             let s = match self {
                 &RambleKind::Adjective => "adj",
                 &RambleKind::Theme => "theme",
-                &RambleKind::Other(o) => o,
+                &RambleKind::Other(ref o) => o,
             };
             write!(f, "{}", s)
         }
     }
+
+    impl<'a> From<&'a str> for RambleKind<'a> {
+        fn from(source: &'a str) -> Self {
+            match source {
+                "adj" => Self::Adjective,
+                "theme" => Self::Theme,
+                other => Self::Other(other)
+            }
+        }
+    }
+
+
 }
 
 #[derive(Debug)]
