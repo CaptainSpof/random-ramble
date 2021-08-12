@@ -230,7 +230,7 @@ export RR_NB_RESULT=25
 
 ***** Command Line
 #+BEGIN_SRC sh
-rr -n 25 [...]
+./rr -n 25 [...]
 #+END_SRC
 
 *** themes path
@@ -247,7 +247,7 @@ export RR_THEMES_PATH="~/.local/random_ramble/themes"
 
 ***** Command Line
 #+BEGIN_SRC sh
-rr --themes-path="~/.local/random_ramble/themes" [...]
+./rr --themes-path="~/.local/random_ramble/themes" [...]
 #+END_SRC
 
 *** adjectives path
@@ -264,7 +264,7 @@ export RR_ADJS_PATH="~/.local/random_ramble/adjectives"
 
 ***** Command Line
 #+BEGIN_SRC sh
-rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
+./rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
 #+END_SRC
 
 
@@ -272,7 +272,7 @@ rr --adjectives-path="~/.local/random_ramble/adjectives" [...]
 ** Pattern - starts with
 Generate random words with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
-rr a
+./rr a
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -290,7 +290,7 @@ Able Aegeus
 ** Specify a length
 Generate 3 random words with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
-rr a -n 3
+./rr a -n 3
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -301,7 +301,7 @@ Angelic Alexander Anderson
 ** Specify a theme
 Generate 3 random words of theme 'animals' with default parameters, for words starting with 'A':
 #+BEGIN_SRC bash
-rr a -n 3 --themes animal
+./rr a -n 3 --themes animal
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -312,7 +312,7 @@ Alive Antelope
 ** Exclude a theme
 Generate 3 random words of any available theme besides 'disney' with default parameters:
 #+BEGIN_SRC bash
-rr -n 3 --themes '!disney'
+./rr -n 3 --themes '!disney'
 #+END_SRC
 output:
 #+BEGIN_SRC bash
@@ -323,8 +323,15 @@ Resourceful Magpie
 ** Specify a template
 Generate a template with random entries:
 #+BEGIN_SRC sh
-rr -T '{{ themes.male_name.0 }}, the {{adjs.superlative.0 | lower }} {{ adj | lower }} {{ themes.color.0 | lower }} {{ themes.videogame.0 }}' -n 4
+./rr -T '{{ themes.male_name.0 }}, the {{adjs.superlative.0 | lower }} {{ adj | lower }} {{ themes.color.0 | lower }} {{ themes.videogame.0 }}' -n 4
 #+END_SRC
+
+#+RESULTS:
+| Ryan      | the hungriest hungriest pink Luigi |
+| Oliver    | the nicest recruit black Dr. Wily  |
+| Alexander | the earliest pink yellow Pac-Man   |
+| Liam      | the greatest steel pink Luigi      |
+
 output:
 #+BEGIN_SRC sh
 Alexander, the faintest mission-critical pink Peach
