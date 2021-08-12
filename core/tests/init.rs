@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod test {
+    use std::path::PathBuf;
+
     use maplit::hashmap;
     use random_ramble::refactor::{RambleKind, RambleValues, RandomRamble};
 
@@ -198,15 +200,15 @@ mod test {
     //     assert_eq!(rr, RandomRamble {
     //         rambles: vec![
     //             Ramble_ {
-    //                 kind: RambleKind_::Theme,
+    //                 kind: RambleKind::Theme,
     //                 value: "Titi",
     //                 file: Some(File {
     //                     name: "test2",
     //                     path: format!("{}test2", path.clone().into_os_string().into_string().expect("🤷"))
     //                 })
     //             },
-    //             Ramble_ {
-    //                 kind: RambleKind_::Theme,
+    //             Ramble {
+    //                 kind: RambleKind::Theme,
     //                 value: "Toto",
     //                 file: Some(File {
     //                     name: "test1",

@@ -52,15 +52,6 @@ mod test {
             .with_others("emoji", emojis)
             .with_template("{{ adj | rr }} {{ emoji | rr }}");
 
-        dbg!(&r);
-
-        let r = match r.replace() {
-            Ok(s) => s,
-            Err(e) => {
-                eprintln!("{:?}", e);
-                "oups".into()
-            }
-        };
         // TODO: find better way to test randomness
         // assert_eq!(r, "Clever 🦀");
         assert_eq!(r.to_string().len(), "Clever 🦀".len());
