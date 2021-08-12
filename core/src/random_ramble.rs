@@ -41,7 +41,7 @@ pub mod refactor {
             .as_array()
             .expect("must provide values alongside random");
 
-        let rng = rand::thread_rng().gen_range(0, values.len());
+        let rng = rand::thread_rng().gen_range(0..values.len());
         let val = values[rng].to_owned();
 
         Ok(val)
