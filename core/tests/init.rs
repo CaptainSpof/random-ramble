@@ -1,9 +1,7 @@
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
-
     use maplit::hashmap;
-    use random_ramble::refactor::{Ramble, RambleKind, RandomRamble};
+    use random_ramble::refactor::{RambleKind, RambleValues, RandomRamble};
 
     #[test]
     fn init_default() {
@@ -13,7 +11,7 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: HashMap::new(),
+                _rambles: RambleValues::default(),
                 template: None,
                 context: None,
             }
@@ -23,8 +21,8 @@ mod test {
     #[test]
     fn init_with_adjs() {
         let adjs = vec![
-            Ramble::new("Happy").with_kind(RambleKind::Adjective),
-            Ramble::new("Sad").with_kind(RambleKind::Adjective),
+            "Happy",
+            "Sad"
         ];
 
         let rr = RandomRamble::new().with_adjs(adjs);
@@ -32,21 +30,8 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![
-                    Ramble {
-                        kind: RambleKind::Adjective,
-                        value: "Happy",
-                        file: None
-                    },
-                    Ramble {
-                        kind: RambleKind::Adjective,
-                        value: "Sad",
-                        file: None
-                    },
-                ],
-                _rambles: hashmap! {
-                    RambleKind::Adjective.to_string() => vec!["Happy", "Sad"],
-                },
+                rambles: vec![],
+                _rambles: RambleValues(hashmap!{RambleKind::Adjective => vec!["Happy", "Sad"]}),
                 template: None,
                 context: None,
             }
@@ -54,22 +39,18 @@ mod test {
     }
 
     #[test]
-    fn init_with_adj_from_string() {
+    fn init_with_adj_from_str() {
         let adj = "Pretty";
 
-        let rr: RandomRamble = RandomRamble::default().with_adj(adj.into());
+        let rr: RandomRamble = RandomRamble::default().with_adj(adj);
 
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![Ramble {
-                    kind: RambleKind::Adjective,
-                    value: "Pretty",
-                    file: None
-                }],
-                _rambles: hashmap! {
-                    RambleKind::Adjective.to_string() => vec!["Pretty"],
-                },
+                rambles: vec![],
+                _rambles: RambleValues(hashmap! {
+                    RambleKind::Adjective => vec!["Pretty"],
+                }),
                 template: None,
                 context: None,
             }
@@ -81,26 +62,15 @@ mod test {
         let adj1 = "Kind";
         let adj2 = "Ruthless";
 
-        let rr = RandomRamble::new().with_adjs(vec![adj1.into(), adj2.into()]);
+        let rr = RandomRamble::new().with_adjs(vec![adj1, adj2]);
 
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![
-                    Ramble {
-                        kind: RambleKind::Adjective,
-                        value: "Kind",
-                        file: None
-                    },
-                    Ramble {
-                        kind: RambleKind::Adjective,
-                        value: "Ruthless",
-                        file: None
-                    },
-                ],
-                _rambles: hashmap! {
-                    RambleKind::Adjective.to_string() => vec!["Kind", "Ruthless"],
-                },
+                rambles: vec![],
+                _rambles: RambleValues(hashmap! {
+                    RambleKind::Adjective => vec!["Kind", "Ruthless"],
+                }),
                 template: None,
                 context: None,
             }
@@ -141,21 +111,17 @@ mod test {
 
     #[test]
     fn init_with_themes() {
-        let themes = vec![Ramble::new("King").with_kind(RambleKind::Theme)];
+        let themes = vec!["King"];
 
         let rr = RandomRamble::new().with_themes(themes);
 
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![Ramble {
-                    kind: RambleKind::Theme,
-                    value: "King",
-                    file: None
-                },],
-                _rambles: hashmap! {
-                    RambleKind::Theme.to_string() => vec!["King"],
-                },
+                rambles: vec![],
+                _rambles: RambleValues(hashmap! {
+                    RambleKind::Theme => vec!["King"],
+                }),
                 template: None,
                 context: None,
             }
@@ -166,24 +132,59 @@ mod test {
     fn init_with_theme_from_string() {
         let theme = "Toto";
 
-        let rr = RandomRamble::new().with_theme(theme.into());
+        let rr = RandomRamble::new().with_theme(theme);
 
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![Ramble {
-                    kind: RambleKind::Theme,
-                    value: "Toto",
-                    file: None
-                },],
-                _rambles: hashmap! {
-                    RambleKind::Theme.to_string() => vec!["Toto"],
-                },
+                rambles: vec![],
+                _rambles: RambleValues(hashmap! {
+                    RambleKind::Theme => vec!["Toto"],
+                }),
                 template: None,
                 context: None,
             }
         );
     }
+
+    #[test]
+    fn init_with_others() {
+        let others = vec!["🦀"];
+
+        let rr = RandomRamble::new().with_others("emoji", others);
+
+        assert_eq!(
+            rr,
+            RandomRamble {
+                rambles: vec![],
+                _rambles: RambleValues(hashmap! {
+                    RambleKind::Other("emoji") => vec!["🦀"],
+                }),
+                template: None,
+                context: None,
+            }
+        );
+    }
+
+    #[test]
+    fn init_with_other_from_string() {
+        let other = "🦀";
+
+        let rr = RandomRamble::new().with_other("emoji", other);
+
+        assert_eq!(
+            rr,
+            RandomRamble {
+                rambles: vec![],
+                _rambles: RambleValues(hashmap! {
+                    RambleKind::Other("emoji") => vec!["🦀"],
+                }),
+                template: None,
+                context: None,
+            }
+        );
+    }
+
 
     // #[test]
     // fn init_with_themes_from_path() {
@@ -225,7 +226,7 @@ mod test {
             rr,
             RandomRamble {
                 rambles: vec![],
-                _rambles: HashMap::new(),
+                _rambles: RambleValues::default(),
                 template: Some("A {{adj}} for {{theme}}"),
                 context: None,
             }
