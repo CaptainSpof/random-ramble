@@ -49,15 +49,12 @@ pub mod refactor {
         let values = value
             .as_array()
             .expect("must provide values alongside random");
-        dbg!(values);
-        dbg!(args);
 
         let category = if let Some(c) = args.get("c") {
             // FIXME handle error more politely
             values
                 .iter()
                 .find(|x| {
-                    dbg!(c);
                     let a = x
                         .as_object()
                         // .unwrap_or(&tera::Map::default())
@@ -71,6 +68,7 @@ pub mod refactor {
                 .as_object()
         } else {
             // get random category
+            debug!("values len: {}", values.len());
             let rng = rand::thread_rng().gen_range(0..values.len());
             values[rng].as_object()
         };
@@ -82,10 +80,15 @@ pub mod refactor {
             .as_array()
             .ok_or("fuck, no array")?;
 
+        if category.len() == 0 {
+            return Ok(Value::default())
+        }
+        debug!("category len: {}", category.len());
         let rng = rand::thread_rng().gen_range(0..category.len());
+        debug!("rng: {}", rng);
         let val = category[rng].to_owned();
 
-        dbg!(&val);
+        debug!("val: {}", &val);
 
         Ok(val)
     }
@@ -235,10 +238,11 @@ pub mod refactor {
                 Some(ref context) => context.clone(),
                 None => self.set_context()?,
             };
-            dbg!(&context);
+            debug!("{:?}", &context);
 
             match self.template {
                 Some(template) => {
+                    debug!("template {:#?}", template);
                     tera.add_raw_template("rr", template)?;
                     tera.render("rr", &context)
                 }
