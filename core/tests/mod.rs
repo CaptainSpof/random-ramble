@@ -19,6 +19,16 @@ mod test {
     }
 
     #[test]
+    fn template_replace_empty_map() {
+        let r = RandomRamble::new()
+            .with_adjs(vec![])
+            .with_themes(vec![])
+            .with_template("Nothing {{ theme | rr }}to{{ adj | rr }} see here.");
+
+        assert_eq!(r.to_string(), "Nothing to see here.".to_string());
+    }
+
+    #[test]
     fn template_replace_default() {
         let adj = "Clever";
         let theme = "Toto";
