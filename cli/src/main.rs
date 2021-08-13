@@ -24,8 +24,7 @@ fn main() {
         &config.adjectives_path,
         adjs,
         &config.themes_path,
-        themes
-        // config.themes
+        themes,
     ) {
         Ok(rr) => rr,
         Err(e) => {
@@ -51,10 +50,11 @@ fn main() {
         }
         None => {
             let ramble = rr.randomize(
-                    config.pattern.as_deref(),
-                    config.number,
-                    config.template.as_deref(),
-                    config.verbose >= 1);
+                config.pattern.as_deref(),
+                config.number,
+                config.template.as_deref(),
+                config.verbose >= 1,
+            );
 
             match ramble {
                 Ok(ramble) => {

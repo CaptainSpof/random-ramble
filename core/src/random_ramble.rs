@@ -13,24 +13,24 @@ use crate::{bail, error::Error};
 
 pub mod refactor {
 
-    use serde::{Serialize, Deserialize};
-    use serde::ser::{Serializer, SerializeMap};
+    use serde::ser::{SerializeMap, Serializer};
+    use serde::{Deserialize, Serialize};
 
     use std::{
         collections::HashMap,
         fmt::{self, Display},
-        path::PathBuf,
+        path::Path,
     };
 
     use rand::Rng;
     use tera::{Context, Error, Tera, Value};
 
     #[derive(Deserialize, Debug, Default, PartialEq)]
-    pub struct RambleValues<'a>(
+    pub struct RambleMap<'a>(
         #[serde(borrow)]
-        pub HashMap<RambleKind<'a>, Vec<&'a str>>
+        pub HashMap<RambleKind<'a>, Vec<Ramble<'a>>>,
     );
-    impl<'a> Serialize for &'a RambleValues<'_> {
+    impl<'a> Serialize for &'a RambleMap<'_> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
@@ -43,27 +43,64 @@ pub mod refactor {
         }
     }
 
+    /// A `tera` filter to get random value from an array
+    pub fn random_filter(value: &Value, args: &HashMap<String, Value>) -> tera::Result<Value> {
+        let values = value
+            .as_array()
+            .expect("must provide values alongside random");
+        dbg!(values);
+        dbg!(args);
+
+        let val: Value = if let Some(c) = args.get("c") {
+            // FIXME handle error more politely
+            let category = values
+                .iter()
+                .find(|x| {
+                    dbg!(c);
+                    let a = x.as_object().expect("a get an obj").get("category").expect("got category");
+
+                    a == c
+                })
+                .ok_or("nope, no match")?
+                .as_object()
+                .ok_or("oups, no object")?
+                .get("values")
+                .ok_or("shit, no values")?
+                .as_array()
+                .ok_or("fuck, no array")?;
+            let rng = rand::thread_rng().gen_range(0..category.len());
+            category[rng].to_owned()
+        } else {
+            // get random category
+            let rng = rand::thread_rng().gen_range(0..values.len());
+            let category = values[rng]
+                .as_object()
+                .ok_or("oups, no object")?
+                .get("values")
+                .ok_or("shit, no values")?
+                .as_array()
+                .ok_or("fuck, no array")?;
+            let rng = rand::thread_rng().gen_range(0..category.len());
+            category[rng].to_owned()
+        };
+
+        // Categories
+
+        // let rng = rand::thread_rng().gen_range(0..categories.len());
+        // let val = categories[rng].to_owned();
+        dbg!(&val);
+
+        Ok(val)
+    }
+
     /// The struct that holds the collection of `rambles` and its template.
     // TODO fields shouldn't be pub
     #[derive(Debug, PartialEq)]
     pub struct RandomRamble<'a> {
         // FIXME: how to use `T` for key ?
-        pub _rambles: RambleValues<'a>,
-        pub rambles: Vec<Ramble<'a>>,
+        pub rambles: RambleMap<'a>,
         pub template: Option<&'a str>,
         pub context: Option<Context>,
-    }
-
-    pub fn random_filter(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
-        let values = value
-            .as_array()
-            .expect("must provide values alongside random");
-        dbg!(values);
-
-        let rng = rand::thread_rng().gen_range(0..values.len());
-        let val = values[rng].to_owned();
-
-        Ok(val)
     }
 
     impl<'a> RandomRamble<'a> {
@@ -71,46 +108,72 @@ pub mod refactor {
             Self::default()
         }
 
-        pub fn with_ramble(mut self, ramble: Ramble<'a>) -> Self {
-            self._rambles.0.insert(ramble.kind, vec![ramble.value]);
+        pub fn with_ramble(mut self, kind: RambleKind<'a>, ramble: Ramble<'a>) -> Self {
+            self.rambles.0.insert(kind, vec![ramble]);
             // self.rambles.push(&ramble);
             self
         }
 
-        pub fn with_rambles(mut self, rambles: Vec<Ramble<'a>>) -> Self {
+        pub fn with_rambles(mut self, kind: RambleKind<'a>, rambles: Vec<Ramble<'a>>) -> Self {
             // FIXME kind can vary
             // self._rambles.insert(, rambles.iter().map(|t| t.value).collect());
-            self.rambles.extend(rambles);
+            self.rambles.0.insert(kind, rambles);
             self
         }
 
         pub fn with_adj(mut self, value: &'a str) -> Self {
-            self._rambles.0.insert(RambleKind::Adjective, vec![value]);
+            self.rambles
+                .0
+                .insert(RambleKind::Adjective, vec![value.into()]);
             self
         }
 
         pub fn with_adjs(mut self, values: Vec<&'a str>) -> Self {
-            self._rambles.0.insert(RambleKind::Adjective, values);
+            let adjs = Ramble {
+                category: None,
+                values,
+            };
+            self.rambles.0.insert(RambleKind::Adjective, vec![adjs]);
             self
         }
 
+        #[allow(unused_mut)]
+        pub fn with_adjs_path(mut self, _path: &Path) -> Self {
+            unimplemented!()
+        }
+
         pub fn with_theme(mut self, value: &'a str) -> Self {
-            self._rambles.0.insert(RambleKind::Theme, vec![value]);
+            self.rambles.0.insert(RambleKind::Theme, vec![value.into()]);
             self
         }
 
         pub fn with_themes(mut self, values: Vec<&'a str>) -> Self {
-            self._rambles.0.insert(RambleKind::Theme, values);
+            let themes = Ramble {
+                category: None,
+                values,
+            };
+            self.rambles.0.insert(RambleKind::Theme, vec![themes]);
             self
         }
 
+        #[allow(unused_mut)]
+        pub fn with_themes_path(mut self, _path: &Path) -> Self {
+            unimplemented!()
+        }
+
         pub fn with_other(mut self, kind: &'a str, value: &'a str) -> Self {
-            self._rambles.0.insert(RambleKind::Other(kind), vec![value]);
+            self.rambles
+                .0
+                .insert(RambleKind::Other(kind), vec![value.into()]);
             self
         }
 
         pub fn with_others(mut self, kind: &'a str, values: Vec<&'a str>) -> Self {
-            self._rambles.0.insert(kind.into(), values);
+            let others = Ramble {
+                category: None,
+                values,
+            };
+            self.rambles.0.insert(kind.into(), vec![others]);
             self
         }
 
@@ -150,15 +213,14 @@ pub mod refactor {
         }
 
         fn set_context(&self) -> Result<Context, Error> {
-            Context::from_serialize(&self._rambles)
+            Context::from_serialize(&self.rambles)
         }
     }
 
     impl Default for RandomRamble<'_> {
         fn default() -> Self {
             Self {
-                rambles: vec![],
-                _rambles: RambleValues(HashMap::new()),
+                rambles: RambleMap(HashMap::new()),
                 template: None,
                 context: None,
             }
@@ -173,37 +235,24 @@ pub mod refactor {
         }
     }
 
-    #[derive(Debug, PartialEq)]
+    #[derive(Deserialize, Serialize, Debug, PartialEq)]
     pub struct Ramble<'a> {
-        pub kind: RambleKind<'a>,
-        pub value: &'a str,
-        pub file: Option<PathBuf>,
-    }
-
-    impl<'a> Ramble<'a> {
-        pub fn new(value: &'a str) -> Self {
-            Self {
-                value,
-                kind: RambleKind::Other("other"),
-                file: None,
-            }
-        }
-
-        pub fn with_kind(mut self, kind: RambleKind<'a>) -> Self {
-            self.kind = kind;
-            self
-        }
+        pub category: Option<&'a str>,
+        pub values: Vec<&'a str>,
     }
 
     impl<'a> From<&'a str> for Ramble<'a> {
-        fn from(value: &'a str) -> Self {
-            Self::new(value)
+        fn from(source: &'a str) -> Self {
+            Self {
+                category: None,
+                values: vec![source],
+            }
         }
     }
 
     #[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Hash, Clone)]
     pub enum RambleKind<'a> {
-    // pub enum RambleKind {
+        // pub enum RambleKind {
         Adjective,
         Theme,
         Other(&'a str),
@@ -225,12 +274,10 @@ pub mod refactor {
             match source {
                 "adj" => Self::Adjective,
                 "theme" => Self::Theme,
-                other => Self::Other(other)
+                other => Self::Other(other),
             }
         }
     }
-
-
 }
 
 #[derive(Debug)]
@@ -466,16 +513,16 @@ impl RandomRamble {
                             .iter()
                             .filter(|a| {
                                 a.entries
-                                 .iter()
-                                 .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
+                                    .iter()
+                                    .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
                             })
                             .collect(),
                         self.themes
                             .iter()
                             .filter(|a| {
                                 a.entries
-                                 .iter()
-                                 .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
+                                    .iter()
+                                    .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
                             })
                             .collect(),
                     ),
@@ -483,32 +530,32 @@ impl RandomRamble {
                 };
 
                 Ok((0..number)
-                   .map(|_| {
-                       let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
-                           Some(a) => (&a.name, a.random_entry(pattern)?),
-                           None => {
-                               warn!("couldn\'t get random adjectives entries");
-                               bail!("\'chier")
-                           }
-                       };
-                       let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
-                           Some(t) => (&t.name, t.random_entry(pattern)?),
-                           None => {
-                               warn!("couldn't get random themes entries");
-                               bail!("'chier")
-                           }
-                       };
-                       if with_details {
-                           Ok(format!(
-                               "[ {:^12} | {:^12} ]\t\t{} {}",
-                               adj_name, theme_name, adj, theme
-                           ))
-                       } else {
-                           Ok(format!("{} {}", adj, theme))
-                       }
-                   })
-                   .filter_map(Result::ok)
-                   .collect())
+                    .map(|_| {
+                        let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
+                            Some(a) => (&a.name, a.random_entry(pattern)?),
+                            None => {
+                                warn!("couldn\'t get random adjectives entries");
+                                bail!("\'chier")
+                            }
+                        };
+                        let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
+                            Some(t) => (&t.name, t.random_entry(pattern)?),
+                            None => {
+                                warn!("couldn't get random themes entries");
+                                bail!("'chier")
+                            }
+                        };
+                        if with_details {
+                            Ok(format!(
+                                "[ {:^12} | {:^12} ]\t\t{} {}",
+                                adj_name, theme_name, adj, theme
+                            ))
+                        } else {
+                            Ok(format!("{} {}", adj, theme))
+                        }
+                    })
+                    .filter_map(Result::ok)
+                    .collect())
             }
         }
     }
@@ -526,10 +573,7 @@ impl Type {
     fn new(file: &DirEntry) -> Result<Self, Error> {
         let f = std::fs::File::open(file.path())?;
         let buf = BufReader::new(f);
-        let entries = buf
-            .lines()
-            .filter_map(Result::ok)
-            .collect::<Vec<String>>();
+        let entries = buf.lines().filter_map(Result::ok).collect::<Vec<String>>();
         let name = match file.file_name().to_str() {
             Some(name) => name.to_owned(),
             None => bail!("fuck, couldn't get file_name"),
