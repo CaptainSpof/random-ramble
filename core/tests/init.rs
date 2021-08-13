@@ -3,7 +3,7 @@ mod test {
     use std::path::PathBuf;
 
     use maplit::hashmap;
-    use random_ramble::refactor::{RambleKind, RambleValues, RandomRamble};
+    use random_ramble::refactor::{Ramble, RambleKind, RambleMap, RandomRamble};
 
     #[test]
     fn init_default() {
@@ -12,8 +12,7 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![],
-                _rambles: RambleValues::default(),
+                rambles: RambleMap::default(),
                 template: None,
                 context: None,
             }
@@ -22,18 +21,17 @@ mod test {
 
     #[test]
     fn init_with_adjs() {
-        let adjs = vec![
-            "Happy",
-            "Sad"
-        ];
+        let adjs = vec!["Happy", "Sad"];
 
         let rr = RandomRamble::new().with_adjs(adjs);
 
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![],
-                _rambles: RambleValues(hashmap!{RambleKind::Adjective => vec!["Happy", "Sad"]}),
+                rambles: RambleMap(hashmap! { RambleKind::Adjective => vec![Ramble {
+                    category: None,
+                    values: vec!["Happy", "Sad"]},
+                ]}),
                 template: None,
                 context: None,
             }
@@ -49,10 +47,10 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![],
-                _rambles: RambleValues(hashmap! {
-                    RambleKind::Adjective => vec!["Pretty"],
-                }),
+                rambles: RambleMap(hashmap! { RambleKind::Adjective => vec![Ramble {
+                    category: None,
+                    values: vec!["Pretty"]},
+                ]}),
                 template: None,
                 context: None,
             }
@@ -69,10 +67,10 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![],
-                _rambles: RambleValues(hashmap! {
-                    RambleKind::Adjective => vec!["Kind", "Ruthless"],
-                }),
+                rambles: RambleMap(hashmap! { RambleKind::Adjective => vec![Ramble {
+                    category: None,
+                    values: vec!["Kind", "Ruthless"],
+                }]}),
                 template: None,
                 context: None,
             }
@@ -120,10 +118,10 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![],
-                _rambles: RambleValues(hashmap! {
-                    RambleKind::Theme => vec!["King"],
-                }),
+                rambles: RambleMap(hashmap! { RambleKind::Theme => vec![Ramble {
+                    category: None,
+                    values: vec!["King"]},
+                ]}),
                 template: None,
                 context: None,
             }
@@ -139,15 +137,45 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![],
-                _rambles: RambleValues(hashmap! {
-                    RambleKind::Theme => vec!["Toto"],
-                }),
+                rambles: RambleMap(hashmap! { RambleKind::Theme => vec![Ramble {
+                    category: None,
+                    values: vec!["Toto"]},
+                ]}),
                 template: None,
                 context: None,
             }
         );
     }
+
+    // #[test]
+    // #[should_panic]
+    // fn init_with_themes_from_path() {
+
+    //     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    //     path.push("resources/tests/themes/");
+
+    //     let rr = RandomRamble::new()
+    //         .with_themes_path(&path);
+
+    //     assert_eq!(rr, RandomRamble {
+    //         rambles: vec![],
+    //         _rambles: RambleValues(hashmap! {
+    //             RambleKind::Theme => vec![
+    //                 RambleR {
+    //                     category: Some("test1"),
+    //                     values: vec![ "Toto" ],
+    //                 },
+    //                 RambleR {
+    //                     category: Some("test2"),
+    //                     values: vec![ "Titi" ],
+    //                 }
+    //             ],
+    //         }),
+    //         template: None,
+    //         context: None,
+    //     });
+
+    // }
 
     #[test]
     fn init_with_others() {
@@ -158,10 +186,11 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![],
-                _rambles: RambleValues(hashmap! {
-                    RambleKind::Other("emoji") => vec!["🦀"],
-                }),
+                rambles: RambleMap(hashmap! { RambleKind::Other("emoji") => vec![Ramble {
+                    category: None,
+                    values: vec!["🦀"],
+                },
+                ]}),
                 template: None,
                 context: None,
             }
@@ -177,48 +206,16 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![],
-                _rambles: RambleValues(hashmap! {
-                    RambleKind::Other("emoji") => vec!["🦀"],
-                }),
+                rambles: RambleMap(hashmap! { RambleKind::Other("emoji") => vec![Ramble {
+                    category: None,
+                    values: vec!["🦀"],
+                },
+                ]}),
                 template: None,
                 context: None,
             }
         );
     }
-
-
-    // #[test]
-    // fn init_with_themes_from_path() {
-
-    //     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    //     path.push("resources/tests/themes/");
-
-    //     let rr = RandomRamble::new()
-    //         .with_themes_path(&path);
-
-    //     assert_eq!(rr, RandomRamble {
-    //         rambles: vec![
-    //             Ramble_ {
-    //                 kind: RambleKind::Theme,
-    //                 value: "Titi",
-    //                 file: Some(File {
-    //                     name: "test2",
-    //                     path: format!("{}test2", path.clone().into_os_string().into_string().expect("🤷"))
-    //                 })
-    //             },
-    //             Ramble {
-    //                 kind: RambleKind::Theme,
-    //                 value: "Toto",
-    //                 file: Some(File {
-    //                     name: "test1",
-    //                     path: format!("{}test1", path.clone().into_os_string().into_string().expect("🤷"))
-    //                 })
-    //             },
-    //         ],
-    //         template: None
-    //     });
-    // }
 
     #[test]
     fn init_with_template() {
@@ -227,8 +224,7 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: vec![],
-                _rambles: RambleValues::default(),
+                rambles: RambleMap::default(),
                 template: Some("A {{adj}} for {{theme}}"),
                 context: None,
             }

@@ -19,7 +19,6 @@
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             # dev
-            lolcat
             rust-analyzer
             cargo-outdated
             # build
@@ -27,13 +26,15 @@
             openssl
             pkgconfig
             rust-linux
+            # random stuff
+            lolcat
+            figlet
           ];
 
-
           shellHook = ''
-            echo "Welcome to ${pname} !" | lolcat
-            [ ! -f ./target/debug/${pname} ] && cargo build ; ln -sf ./target/debug/${pname} rr
-          '';
+              figlet "${pname}" -f $(showfigfonts | rg '(\w+) :' -r '$1' | shuf -n 1) | lolcat
+              [ ! -f ./target/debug/${pname} ] && cargo build ; ln -sf ./target/debug/${pname} rr
+            '';
         };
       });
 }
