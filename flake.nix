@@ -19,14 +19,15 @@
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             # dev
-            rust-analyzer
-            cargo-outdated
+            rust-analyzer  # rust lsp
+            cargo-outdated # show outdated rust deps
             # build
+            act            # run github actions locally
             glibc
             openssl
             pkgconfig
             rust-linux
-            # random stuff
+            # nawak
             lolcat
             figlet
           ];
