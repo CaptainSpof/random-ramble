@@ -33,5 +33,8 @@ ENV RR_ADJS_PATH=/dict/adjectives/
 
 ENV RR_THEMES_PATH=/dict/themes/
 
+# Smoke test
+RUN ["rr", "--version"]
+
 # set the startup command to run your binary
-CMD ["./rr"]
+ENTRYPOINT ["/usr/bin/rr"]
