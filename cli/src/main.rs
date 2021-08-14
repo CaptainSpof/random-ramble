@@ -20,12 +20,7 @@ fn main() {
     let themes = config.themes.iter().map(AsRef::as_ref).collect();
     let adjs = config.adjs.iter().map(AsRef::as_ref).collect();
 
-    let rr = match RandomRamble::new(
-        &config.adjectives_path,
-        adjs,
-        &config.themes_path,
-        themes,
-    ) {
+    let rr = match RandomRamble::new(&config.adjectives_path, adjs, &config.themes_path, themes) {
         Ok(rr) => rr,
         Err(e) => {
             error!("Crote, une erreur: {}", e);
