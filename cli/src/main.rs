@@ -4,7 +4,7 @@ extern crate log;
 use env_logger::{Builder, WriteStyle};
 use log::LevelFilter;
 
-use structopt::StructOpt;
+use clap::Clap;
 
 mod cmds;
 mod config;
@@ -13,7 +13,7 @@ use config::{Command, Config};
 use random_ramble::RandomRamble;
 
 fn main() {
-    let config: Config = Config::from_args();
+    let config: Config = Config::parse();
     init_logger(config.verbose);
     debug!("config: {:#?}", config);
 
