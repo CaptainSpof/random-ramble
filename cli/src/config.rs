@@ -1,68 +1,68 @@
-use structopt::clap::AppSettings;
-use structopt::StructOpt;
+use clap::{ AppSettings, Clap, crate_version };
 
 use std::path::PathBuf;
 
 use std::io::{self, Read};
 
-#[derive(StructOpt, Debug)]
-#[structopt(author, name = "random-ramble", about = "A simple random words generator", global_settings(&[AppSettings::ColoredHelp]))]
+#[derive(Clap, Debug)]
+#[clap(author, name = "random-ramble", about = "A simple random words generator", version = crate_version!())]
+#[clap(setting = AppSettings::ColoredHelp)]
 pub struct Config {
     /// Verbose mode (-v, -vv, -vvv)
-    #[structopt(
+    #[clap(
         short,
         long,
         parse(from_occurrences),
-        long_help = "-v:\t\tINFO|WARN|ERROR\n-vv:\tINFO|WARN|ERROR|DEBUG\n-vvv:\tINFO|WARN|ERROR|DEBUG|TRACE"
+        long_about = "-v:\t\tINFO|WARN|ERROR\n-vv:\tINFO|WARN|ERROR|DEBUG\n-vvv:\tINFO|WARN|ERROR|DEBUG|TRACE"
     )]
     pub verbose: u8,
 
     /// The length of the list to be returned
-    #[structopt(short, env = "RR_NB_RESULT", default_value = "10")]
+    #[clap(short, env = "RR_NB_RESULT", default_value = "10")]
     pub number: usize,
 
     /// Path to the themes files
-    #[structopt(long, env = "RR_THEMES_PATH", default_value = "./dict/themes")]
+    #[clap(long, env = "RR_THEMES_PATH", default_value = "./dict/themes")]
     pub themes_path: PathBuf,
 
     /// A list of themes to be chosen from
     ///
     /// Themes preceded by '!' will be excluded
-    #[structopt(short, long)]
+    #[clap(short, long)]
     pub themes: Vec<String>,
 
     /// Path to the adjectives files
-    #[structopt(long, env = "RR_ADJS_PATH", default_value = "./dict/adjectives")]
+    #[clap(long, env = "RR_ADJS_PATH", default_value = "./dict/adjectives")]
     pub adjectives_path: PathBuf,
 
     /// A list of adjectives to be chosen from
-    #[structopt(short, long)]
+    #[clap(short, long)]
     pub adjs: Vec<String>,
 
     /// Provide a template from which to generate words
-    #[structopt(short = "T", long)]
+    #[clap(short='T', long)]
     pub template: Option<String>,
 
     /// The pattern to start with
     pub pattern: Option<String>,
 
     /// cmd
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub cmd: Option<Command>,
 }
 
-#[derive(StructOpt, Debug)]
-#[structopt(name = "Command")]
+#[derive(Clap, Debug)]
+#[clap(name = "Command")]
 pub enum Command {
-    #[structopt(name = "add")]
+    #[clap(name = "add")]
     /// Add entries to a theme, or create a new theme
     Add(Edit),
     /// Delete entries from a theme
-    #[structopt(visible_aliases = &["remove", "del"])]
+    #[clap(visible_aliases = &["remove", "del"])]
     Delete(Edit),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Clap, Debug)]
 pub struct Edit {
     /// Provide a theme
     pub theme: String,
@@ -73,7 +73,7 @@ pub struct Edit {
     entries: Vec<String>,
 
     /// Work against adjectif
-    #[structopt(short)]
+    #[clap(short)]
     pub adjs: bool,
 }
 
