@@ -81,7 +81,7 @@ pub mod refactor {
             .ok_or("fuck, no array")?;
 
         if category.len() == 0 {
-            return Ok(Value::default())
+            return Ok(Value::default());
         }
         debug!("category len: {}", category.len());
         let rng = rand::thread_rng().gen_range(0..category.len());
@@ -165,7 +165,7 @@ pub mod refactor {
                 .filter_map(Result::ok)
                 .collect();
 
-            dbg!(&adjs);
+            debug!("adjs: {:#?}", &adjs);
             Ok(self.with_rambles(RambleKind::Adjective, adjs))
         }
 
@@ -195,7 +195,7 @@ pub mod refactor {
                 .filter_map(Result::ok)
                 .collect();
 
-            dbg!(&themes);
+            debug!("themes: {:#?}", &themes);
             Ok(self.with_rambles(RambleKind::Theme, themes))
         }
 
