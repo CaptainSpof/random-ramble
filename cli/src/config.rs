@@ -1,4 +1,4 @@
-use clap::{ AppSettings, Clap, crate_version };
+use clap::{crate_version, AppSettings, Clap};
 
 use std::path::PathBuf;
 
@@ -40,8 +40,12 @@ pub struct Config {
     pub adjs: Vec<String>,
 
     /// Provide a template from which to generate words
-    #[clap(short='T', long)]
+    #[clap(short = 'T', long)]
     pub template: Option<String>,
+
+    /// try the refactor version
+    #[clap(short, long)]
+    pub refactor: bool,
 
     /// The pattern to start with
     pub pattern: Option<String>,
