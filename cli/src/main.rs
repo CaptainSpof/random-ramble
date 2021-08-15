@@ -10,6 +10,7 @@ mod cmds;
 mod config;
 
 use config::{Command, Config};
+use random_ramble::refactor::RandomRamble as _RandomRamble;
 use random_ramble::RandomRamble;
 
 fn main() {
@@ -20,49 +21,66 @@ fn main() {
     let themes = config.themes.iter().map(AsRef::as_ref).collect();
     let adjs = config.adjs.iter().map(AsRef::as_ref).collect();
 
-    let rr = match RandomRamble::new(&config.adjectives_path, adjs, &config.themes_path, themes) {
-        Ok(rr) => rr,
-        Err(e) => {
-            error!("Crote, une erreur: {}", e);
-            std::process::exit(1);
-        }
-    };
+    if config.refactor {
+        let template = config
+            .template
+            .unwrap_or_else(|| "{{ adj | rr }} {{ theme | rr }}".to_string());
+        let rr = _RandomRamble::new()
+            .with_adjs(adjs)
+            .with_themes(themes)
+            .with_adjs_path(&config.adjectives_path)
+            .expect("no adjs path")
+            .with_themes_path(&config.themes_path)
+            .expect("no themes path")
+            .with_template(&template);
 
-    match config.cmd {
-        Some(Command::Add(c)) => {
-            if c.adjs {
-                cmds::add(&config.adjectives_path, &c.theme, c.entries())
-            } else {
-                cmds::add(&config.themes_path, &c.theme, c.entries());
+        println!("{}", rr.to_string());
+    } else {
+        let rr = match RandomRamble::new(&config.adjectives_path, adjs, &config.themes_path, themes)
+        {
+            Ok(rr) => rr,
+            Err(e) => {
+                error!("Crote, une erreur: {}", e);
+                std::process::exit(1);
             }
-        }
-        Some(Command::Delete(c)) => {
-            if c.adjs {
-                cmds::delete(&config.adjectives_path, &c.theme, c.entries())
-            } else {
-                cmds::delete(&config.themes_path, &c.theme, c.entries());
-            }
-        }
-        None => {
-            let ramble = rr.randomize(
-                config.pattern.as_deref(),
-                config.number,
-                config.template.as_deref(),
-                config.verbose >= 1,
-            );
+        };
 
-            match ramble {
-                Ok(ramble) => {
-                    for r in ramble {
-                        println!("{}", r);
+        match config.cmd {
+            Some(Command::Add(c)) => {
+                if c.adjs {
+                    cmds::add(&config.adjectives_path, &c.theme, c.entries())
+                } else {
+                    cmds::add(&config.themes_path, &c.theme, c.entries());
+                }
+            }
+            Some(Command::Delete(c)) => {
+                if c.adjs {
+                    cmds::delete(&config.adjectives_path, &c.theme, c.entries())
+                } else {
+                    cmds::delete(&config.themes_path, &c.theme, c.entries());
+                }
+            }
+            None => {
+                let ramble = rr.randomize(
+                    config.pattern.as_deref(),
+                    config.number,
+                    config.template.as_deref(),
+                    config.verbose >= 1,
+                );
+
+                match ramble {
+                    Ok(ramble) => {
+                        for r in ramble {
+                            println!("{}", r);
+                        }
+                    }
+                    Err(e) => {
+                        eprint!("Zut ! {}", e);
+                        std::process::exit(1);
                     }
                 }
-                Err(e) => {
-                    eprint!("Zut ! {}", e);
-                    std::process::exit(1);
-                }
             }
-        }
+        };
     };
 }
 
