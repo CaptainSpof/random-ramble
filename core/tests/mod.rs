@@ -1,5 +1,8 @@
 #[cfg(test)]
 mod test {
+    use std::path::PathBuf;
+
+    use pretty_assertions::assert_eq;
     use random_ramble::refactor::{Ramble, RambleKind, RandomRamble};
 
     #[test]
@@ -57,10 +60,10 @@ mod test {
 
     #[test]
     fn template_replace_custom_ramble_vec_with_ramble() {
-        let en = vec!["Clever", "Stupid"];
+        let en = vec!["Clever".into(), "Stupid".into()];
 
         let adjs = Ramble {
-            category: Some("en"),
+            category: Some("en".into()),
             values: en,
         };
 
@@ -78,10 +81,10 @@ mod test {
 
     #[test]
     fn template_replace_custom_ramble_vec_with_category() {
-        let en = vec!["Clever", "Stupid"];
+        let en = vec!["Clever".into(), "Stupid".into()];
 
         let adjs = Ramble {
-            category: Some("en"),
+            category: Some("en".into()),
             values: en,
         };
 
@@ -96,21 +99,22 @@ mod test {
         // assert_eq!(r.to_string(), "Clever 🦀");
         assert_eq!(r.to_string().len(), "Clever 🦀".len());
     }
+
     #[test]
     fn template_replace_custom_ramble_vec_with_categories() {
-        let en = vec!["Clever", "Stupid"];
-        let fr = vec!["Malin", "Idiot"];
+        let en = vec!["Clever".into(), "Stupid".into()];
+        let fr = vec!["Malin".into(), "Idiot".into()];
 
         let en_adjs = Ramble {
-            category: Some("en"),
+            category: Some("en".into()),
             values: en,
         };
         let fr_adjs = Ramble {
-            category: Some("fr"),
+            category: Some("fr".into()),
             values: fr,
         };
 
-        let emojis = vec!["🦀", "🐕"];
+        let emojis = vec!["🦀".into(), "🐕".into()];
 
         let r = RandomRamble::new()
             .with_rambles(RambleKind::Adjective, vec![en_adjs, fr_adjs])
@@ -126,5 +130,53 @@ mod test {
         // TODO: find better way to test randomness
         // assert_eq!(r.to_string(), "Idiot 🐕");
         assert_eq!(r.len(), "Malin 🦀".len());
+    }
+
+    #[test]
+    fn template_replace_custom_ramble_vec_with_categories_not_found() {
+        let en = vec!["Clever".into(), "Stupid".into()];
+        let fr = vec!["Malin".into(), "Idiot".into()];
+
+        let en_adjs = Ramble {
+            category: Some("en".into()),
+            values: en,
+        };
+        let fr_adjs = Ramble {
+            category: Some("fr".into()),
+            values: fr,
+        };
+
+        let emojis = vec!["🦀", "🐕"];
+
+        let r = RandomRamble::new()
+            .with_rambles(RambleKind::Adjective, vec![en_adjs, fr_adjs])
+            .with_others("emoji", emojis)
+            .with_template("{{ adj | rr(c='pt') }} {{ emoji | rr }}");
+
+        let r = r.to_string();
+        assert_eq!(r, "???");
+    }
+
+    #[test]
+    fn template_replace_themes_adjs_from_files() {
+        let mut adj_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        adj_path.push("resources/tests/adjectives/");
+
+        let mut theme_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        theme_path.push("resources/tests/themes/");
+
+        let rr = RandomRamble::new()
+            .with_adjs_path(&adj_path)
+            .expect("adjs not ok")
+            .with_themes_path(&theme_path)
+            .expect("themes not ok")
+            .with_template("{{ adj | rr(c='en') }} {{ theme | rr(c='toto') }}")
+            .to_string();
+
+        // assert_eq!(
+        //    rr,
+        //     ""
+        // );
+        assert_eq!(rr.len(), 16);
     }
 }
