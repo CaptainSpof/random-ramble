@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod test {
-    use std::path::PathBuf;
-
     use maplit::hashmap;
+    use pretty_assertions::assert_eq;
     use random_ramble::refactor::{Ramble, RambleKind, RambleMap, RandomRamble};
+    use std::{collections::HashMap, hash::Hash, path::PathBuf};
 
     #[test]
     fn init_default() {
@@ -30,7 +30,7 @@ mod test {
             RandomRamble {
                 rambles: RambleMap(hashmap! { RambleKind::Adjective => vec![Ramble {
                     category: None,
-                    values: vec!["Happy", "Sad"]},
+                    values: vec!["Happy".into(), "Sad".into()]},
                 ]}),
                 template: None,
                 context: None,
@@ -49,7 +49,7 @@ mod test {
             RandomRamble {
                 rambles: RambleMap(hashmap! { RambleKind::Adjective => vec![Ramble {
                     category: None,
-                    values: vec!["Pretty"]},
+                    values: vec!["Pretty".into()]},
                 ]}),
                 template: None,
                 context: None,
@@ -69,7 +69,7 @@ mod test {
             RandomRamble {
                 rambles: RambleMap(hashmap! { RambleKind::Adjective => vec![Ramble {
                     category: None,
-                    values: vec!["Kind", "Ruthless"],
+                    values: vec!["Kind".into(), "Ruthless".into()],
                 }]}),
                 template: None,
                 context: None,
@@ -120,7 +120,7 @@ mod test {
             RandomRamble {
                 rambles: RambleMap(hashmap! { RambleKind::Theme => vec![Ramble {
                     category: None,
-                    values: vec!["King"]},
+                    values: vec!["King".into()]},
                 ]}),
                 template: None,
                 context: None,
@@ -139,7 +139,7 @@ mod test {
             RandomRamble {
                 rambles: RambleMap(hashmap! { RambleKind::Theme => vec![Ramble {
                     category: None,
-                    values: vec!["Toto"]},
+                    values: vec!["Toto".into()]},
                 ]}),
                 template: None,
                 context: None,
@@ -147,35 +147,59 @@ mod test {
         );
     }
 
-    // #[test]
-    // #[should_panic]
-    // fn init_with_themes_from_path() {
+    fn keys_match<T: Eq + Hash, U, V>(map1: &HashMap<T, U>, map2: &HashMap<T, V>) -> bool {
+        map1.len() == map2.len() && map1.keys().all(|k| map2.contains_key(k))
+    }
 
-    //     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    //     path.push("resources/tests/themes/");
+    #[test]
+    fn init_with_themes_from_file_path() {
+        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.push("resources/tests/themes/foobar");
 
-    //     let rr = RandomRamble::new()
-    //         .with_themes_path(&path);
+        let rr = match RandomRamble::new().with_themes_path(&path) {
+            Ok(rr) => rr,
+            Err(e) => {
+                panic!("{}", e.to_string());
+            }
+        };
 
-    //     assert_eq!(rr, RandomRamble {
-    //         rambles: vec![],
-    //         _rambles: RambleValues(hashmap! {
-    //             RambleKind::Theme => vec![
-    //                 RambleR {
-    //                     category: Some("test1"),
-    //                     values: vec![ "Toto" ],
-    //                 },
-    //                 RambleR {
-    //                     category: Some("test2"),
-    //                     values: vec![ "Titi" ],
-    //                 }
-    //             ],
-    //         }),
-    //         template: None,
-    //         context: None,
-    //     });
+        assert!(keys_match(
+            &rr.rambles.0,
+            &hashmap! { RambleKind::Theme => vec![
+                Ramble {
+                    category: Some("foobar".into()),
+                    values: vec!["foo".into(), "bar".into()]
+                },
+            ]}
+        ));
+    }
 
-    // }
+    #[test]
+    fn init_with_themes_from_dir_path() {
+        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.push("resources/tests/themes/");
+
+        let rr = match RandomRamble::new().with_themes_path(&path) {
+            Ok(rr) => rr,
+            Err(e) => {
+                panic!("{}", e.to_string());
+            }
+        };
+
+        assert!(keys_match(
+            &rr.rambles.0,
+            &hashmap! { RambleKind::Theme => vec![
+                Ramble {
+                    category: Some("toto".into()),
+                    values: vec!["Toto".into(), "Titi".into()]
+                },
+                Ramble {
+                    category: Some("foobar".into()),
+                    values: vec!["foo".into(), "bar".into()]
+                },
+            ]}
+        ));
+    }
 
     #[test]
     fn init_with_others() {
@@ -188,7 +212,7 @@ mod test {
             RandomRamble {
                 rambles: RambleMap(hashmap! { RambleKind::Other("emoji") => vec![Ramble {
                     category: None,
-                    values: vec!["🦀"],
+                    values: vec!["🦀".into()],
                 },
                 ]}),
                 template: None,
@@ -208,7 +232,7 @@ mod test {
             RandomRamble {
                 rambles: RambleMap(hashmap! { RambleKind::Other("emoji") => vec![Ramble {
                     category: None,
-                    values: vec!["🦀"],
+                    values: vec!["🦀".into()],
                 },
                 ]}),
                 template: None,

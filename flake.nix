@@ -21,6 +21,7 @@
             # dev
             rust-analyzer  # rust lsp
             cargo-outdated # show outdated rust deps
+            cargo-edit     # add, remove deps from the command line
             # build
             act            # run github actions locally
             glibc
