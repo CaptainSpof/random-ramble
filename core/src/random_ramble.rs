@@ -9,13 +9,16 @@ use std::io::{prelude::*, BufReader};
 use std::path::Path;
 use walkdir::{DirEntry, WalkDir};
 
-use crate::{bail, error::Error};
+use crate::{bail, error::Jabber};
 
 pub mod refactor {
 
+    use crate::error::Jabber;
     use serde::ser::{SerializeMap, Serializer};
     use serde::{Deserialize, Serialize};
+    use walkdir::{DirEntry, WalkDir};
 
+    use std::io::{BufRead, BufReader};
     use std::{
         collections::HashMap,
         fmt::{self, Display},
@@ -26,7 +29,8 @@ pub mod refactor {
     use tera::{Context, Error, Tera, Value};
 
     #[derive(Deserialize, Debug, Default, PartialEq)]
-    pub struct RambleMap<'a>(#[serde(borrow)] pub HashMap<RambleKind<'a>, Vec<Ramble<'a>>>);
+    // pub struct RambleMap<'a>(#[serde(borrow)] pub HashMap<RambleKind<'a>, Vec<Ramble<'a>>>);
+    pub struct RambleMap<'a>(#[serde(borrow)] pub HashMap<RambleKind<'a>, Vec<Ramble>>);
     impl<'a> Serialize for &'a RambleMap<'_> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
@@ -56,6 +60,7 @@ pub mod refactor {
                     dbg!(c);
                     let a = x
                         .as_object()
+                        // .unwrap_or(&tera::Map::default())
                         .expect("a get an obj")
                         .get("category")
                         .expect("got category");
@@ -100,15 +105,31 @@ pub mod refactor {
             Self::default()
         }
 
-        pub fn with_ramble(mut self, kind: RambleKind<'a>, ramble: Ramble<'a>) -> Self {
+        fn load_from_file(file: &DirEntry) -> Result<Ramble, Jabber> {
+            let file_name = file
+                .file_name()
+                .to_str()
+                .ok_or_else(|| Jabber::Custom("couldn't get filename".to_string()))?;
+
+            let f = std::fs::File::open(file.path())?;
+            let buf = BufReader::new(f);
+            let entries = buf.lines().filter_map(Result::ok).collect::<Vec<String>>();
+
+            Ok(Ramble {
+                category: Some(file_name.into()),
+                values: entries,
+            })
+        }
+
+        // pub fn with_ramble(mut self, kind: RambleKind<'a>, ramble: Ramble<'a>) -> Self {
+        pub fn with_ramble(mut self, kind: RambleKind<'a>, ramble: Ramble) -> Self {
             self.rambles.0.insert(kind, vec![ramble]);
-            // self.rambles.push(&ramble);
             self
         }
 
-        pub fn with_rambles(mut self, kind: RambleKind<'a>, rambles: Vec<Ramble<'a>>) -> Self {
+        // pub fn with_rambles(mut self, kind: RambleKind<'a>, rambles: Vec<Ramble<'a>>) -> Self {
+        pub fn with_rambles(mut self, kind: RambleKind<'a>, rambles: Vec<Ramble>) -> Self {
             // FIXME kind can vary
-            // self._rambles.insert(, rambles.iter().map(|t| t.value).collect());
             self.rambles.0.insert(kind, rambles);
             self
         }
@@ -120,18 +141,29 @@ pub mod refactor {
             self
         }
 
-        pub fn with_adjs(mut self, values: Vec<&'a str>) -> Self {
+        // pub fn with_adjs(mut self, values: Vec<&'a str>) -> Self {
+        pub fn with_adjs(mut self, values: Vec<&str>) -> Self {
             let adjs = Ramble {
                 category: None,
-                values,
+                // values: values,
+                values: values.into_iter().map(|v| v.into()).collect(),
             };
             self.rambles.0.insert(RambleKind::Adjective, vec![adjs]);
             self
         }
 
         #[allow(unused_mut)]
-        pub fn with_adjs_path(mut self, _path: &Path) -> Self {
-            unimplemented!()
+        pub fn with_adjs_path(mut self, path: &Path) -> Result<Self, Jabber> {
+            let adjs: Vec<Ramble> = WalkDir::new(path)
+                .into_iter()
+                .filter_map(Result::ok)
+                .filter(|metadata| metadata.file_type().is_file())
+                .map(|t| RandomRamble::load_from_file(&t))
+                .filter_map(Result::ok)
+                .collect();
+
+            dbg!(&adjs);
+            Ok(self.with_rambles(RambleKind::Adjective, adjs))
         }
 
         pub fn with_theme(mut self, value: &'a str) -> Self {
@@ -139,18 +171,29 @@ pub mod refactor {
             self
         }
 
-        pub fn with_themes(mut self, values: Vec<&'a str>) -> Self {
+        // pub fn with_themes(mut self, values: Vec<&'a str>) -> Self {
+        pub fn with_themes(mut self, values: Vec<&str>) -> Self {
             let themes = Ramble {
                 category: None,
-                values,
+                // values,
+                values: values.into_iter().map(|v| v.into()).collect(),
             };
             self.rambles.0.insert(RambleKind::Theme, vec![themes]);
             self
         }
 
         #[allow(unused_mut)]
-        pub fn with_themes_path(mut self, _path: &Path) -> Self {
-            unimplemented!()
+        pub fn with_themes_path(mut self, path: &Path) -> Result<Self, Jabber> {
+            let themes: Vec<Ramble> = WalkDir::new(path)
+                .into_iter()
+                .filter_map(Result::ok)
+                .filter(|metadata| metadata.file_type().is_file())
+                .map(|t| RandomRamble::load_from_file(&t))
+                .filter_map(Result::ok)
+                .collect();
+
+            dbg!(&themes);
+            Ok(self.with_rambles(RambleKind::Theme, themes))
         }
 
         pub fn with_other(mut self, kind: &'a str, value: &'a str) -> Self {
@@ -160,10 +203,12 @@ pub mod refactor {
             self
         }
 
-        pub fn with_others(mut self, kind: &'a str, values: Vec<&'a str>) -> Self {
+        // pub fn with_others(mut self, kind: &'a str, values: Vec<&'a str>) -> Self {
+        pub fn with_others(mut self, kind: &'a str, values: Vec<&str>) -> Self {
             let others = Ramble {
                 category: None,
-                values,
+                // values,
+                values: values.into_iter().map(|v| v.into()).collect(),
             };
             self.rambles.0.insert(kind.into(), vec![others]);
             self
@@ -179,6 +224,8 @@ pub mod refactor {
             self
         }
 
+        /// Generates a String from a template.
+        /// use `to_string()` if you don't care about the Error.
         pub fn replace(&self) -> Result<String, Error> {
             let mut tera = Tera::default();
             tera.register_filter("rr", random_filter);
@@ -222,22 +269,42 @@ pub mod refactor {
     impl Display for RandomRamble<'_> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             // TODO: handle error
-            let s = self.replace().unwrap_or_else(|_| "???".into());
+            // let s = self.replace().unwrap_or_else(|_| "???".into());
+
+            let s = match self.replace() {
+                Ok(s) => s,
+                Err(e) => {
+                    eprintln!("Ima let you finish, but… {:#?}", e);
+                    "???".into()
+                }
+            };
+
             write!(f, "{}", s)
         }
     }
 
+    /// Struct that old the category and the values.
+    ///
+    /// *Note* I initially tried to have a ref to the values and category.
+    /// But I am not sure that it can be done. It might work if the user passes in the values.
+    /// But if we try to load the values from a file, the initial references will be droped
+    /// when exiting the function responsible to load the file.
     #[derive(Deserialize, Serialize, Debug, PartialEq)]
-    pub struct Ramble<'a> {
-        pub category: Option<&'a str>,
-        pub values: Vec<&'a str>,
+    // pub struct Ramble<'a> {
+    pub struct Ramble {
+        pub category: Option<String>,
+        // pub category: Option<&'a str>,
+        // pub values: Vec<&'a str>,
+        pub values: Vec<String>,
     }
 
-    impl<'a> From<&'a str> for Ramble<'a> {
-        fn from(source: &'a str) -> Self {
+    // impl<'a> From<&'a str> for Ramble<'a> {
+    impl From<&str> for Ramble {
+        fn from(source: &str) -> Self {
             Self {
                 category: None,
-                values: vec![source],
+                // values: vec![source],
+                values: vec![source.into()],
             }
         }
     }
@@ -284,7 +351,7 @@ impl RandomRamble {
         adjs: Vec<&str>,
         themes_path: &Path,
         themes: Vec<&str>,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self, Jabber> {
         let (excluded_adjs, adjs_path) = (
             adjs.iter()
                 .filter(|t| t.starts_with('!'))
@@ -373,7 +440,7 @@ impl RandomRamble {
         number: usize,
         template: Option<&str>,
         with_details: bool,
-    ) -> Result<Vec<String>, Error> {
+    ) -> Result<Vec<String>, Jabber> {
         let re_adj = Regex::new(r"adj[^s]").expect("this shouldn't fail");
         let re_theme = Regex::new(r"theme[^s]").expect("this shouldn't fail");
 
@@ -562,7 +629,7 @@ struct Type {
 }
 
 impl Type {
-    fn new(file: &DirEntry) -> Result<Self, Error> {
+    fn new(file: &DirEntry) -> Result<Self, Jabber> {
         let f = std::fs::File::open(file.path())?;
         let buf = BufReader::new(f);
         let entries = buf.lines().filter_map(Result::ok).collect::<Vec<String>>();
@@ -600,7 +667,7 @@ impl Type {
             .collect()
     }
 
-    fn random_entry(&self, pattern: Option<&str>) -> Result<String, Error> {
+    fn random_entry(&self, pattern: Option<&str>) -> Result<String, Jabber> {
         match self.entries(pattern).choose(&mut rand::thread_rng()) {
             Some(r) => Ok(r.to_string()),
             None => match pattern {

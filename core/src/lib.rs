@@ -7,5 +7,5 @@ mod macros;
 mod error;
 mod random_ramble;
 
-pub use crate::error::Error;
+pub use crate::error::Jabber;
 pub use crate::random_ramble::{refactor, RandomRamble};
