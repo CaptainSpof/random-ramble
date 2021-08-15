@@ -1,22 +1,14 @@
-use std::fmt;
+use std::io;
+use thiserror::Error;
 
-#[derive(Debug)]
-pub enum Error {
+#[derive(Debug, Error)]
+pub enum Jabber {
+    #[error("Oh shit, here we go again…")]
     Custom(String),
+    #[error("We ain't found shit!")]
+    IO(#[from] io::Error),
+    #[error("Walkdir · We ain't found shit!")]
+    Walkdir(#[from] walkdir::Error),
+    #[error("We ain'")]
+    Tera(#[from] tera::Error),
 }
-
-impl From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self {
-        Self::Custom(format!("Fuck, io error: {}", e.to_string()))
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::Custom(e) => write!(f, "{}", e),
-        }
-    }
-}
-
-impl std::error::Error for Error {}
