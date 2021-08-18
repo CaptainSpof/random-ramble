@@ -31,6 +31,7 @@
         };
         defaultPackage = packages."${name}";
 
+        # docker image
         packages.dockerImage = pkgs.dockerTools.buildLayeredImage {
           inherit name;
           contents = [ packages."${name}" ];
@@ -53,9 +54,6 @@
             cargo-edit     # add, remove deps from the command line
             # build
             act            # run github actions locally
-            glibc
-            openssl
-            pkgconfig
             rust-linux
             # nawak
             lolcat
