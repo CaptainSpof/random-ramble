@@ -24,7 +24,27 @@ jobs:
       - name: git · checkout
         uses: actions/checkout@v2
 
+      - name: nix · setup
+        if: matrix.os != 'windows-latest'
+        uses: cachix/install-nix-action@v13
+        with:
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
+          install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - run: nix build
+        if: matrix.os != 'windows-latest'
+      # TODO: move to release.yml & send to a registry
+      - run: nix build .#dockerImage && docker load < result
+        if: matrix.os == 'ubuntu-latest'
+      # HACK: get cargo build & test output after the fact
+      - run: nix log
+        if: matrix.os != 'windows-latest'
+      - run: nix flake check
+        if: matrix.os != 'windows-latest'
+
       - name: rustup · setup
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -33,22 +53,26 @@ jobs:
           components: rustfmt, clippy
 
       - name: cargo · build
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/cargo@v1
         with:
           command: build
 
       - name: cargo · test
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/cargo@v1
         with:
           command: test
 
       - name: cargo · format
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
 
       - name: cargo · clippy
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/cargo@v1
         with:
           command: clippy
