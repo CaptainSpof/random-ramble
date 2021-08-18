@@ -16,11 +16,11 @@
         overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs { inherit system overlays; };
         rustc-version = "latest";
-        rust-linux = pkgs.rust-bin.nightly.${rustc-version}.default;
+        rust = pkgs.rust-bin.nightly.${rustc-version}.default;
         # Override the version used in naersk
         naersk-lib = naersk.lib."${system}".override {
-          cargo = rust-linux;
-          rustc = rust-linux;
+          cargo = rust;
+          rustc = rust;
         };
       in rec {
 
@@ -39,36 +39,49 @@
         };
 
         # `nix run`
-        apps."${name}" = flake-utils.lib.mkApp {
-          drv = packages."${name}";
-        };
+        apps."${name}" = flake-utils.lib.mkApp { drv = packages."${name}"; };
         defaultApp = apps."${name}";
-
 
         # `nix develop`
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
             # dev
-            rust-analyzer  # rust lsp
+            rust-analyzer # rust lsp
             cargo-outdated # show outdated rust deps
-            cargo-edit     # add, remove deps from the command line
+            cargo-edit # add, remove deps from the command line
             # build
-            act            # run github actions locally
-            rust-linux
+            act # run github actions locally
+            rust
             # nawak
             lolcat
             figlet
           ];
 
           shellHook = ''
-              figlet "${pname}" -f $(showfigfonts | rg '(\w+) :' -r '$1' | shuf -n 1) | lolcat
-              [ ! -f ./target/debug/${pname} ] && cargo build ; ln -sf ./target/debug/${pname} rr
-            '';
-
-          # docker = hostPkgs.dockerTools.streamLayeredImage {
-          #   name = "${pname}";
-          #   contents =
-          # };
+            figlet "${pname}" -f $(showfigfonts | rg '(\w+) :' -r '$1' | shuf -n 1) | lolcat
+            [ ! -f ./target/debug/${pname} ] && cargo build ; ln -sf ./target/debug/${pname} rr
+          '';
         };
+
+        checks = {
+
+          rust-fmt = with import nixpkgs { inherit system; };
+            stdenv.mkDerivation {
+              pname = "${name}-cargo-fmt-check";
+              version = "test";
+
+              phases = [ "unpackPhase" "buildPhase" ];
+
+              src = self;
+
+              buildInputs = [ pkgs.rustfmt ];
+
+              buildPhase = ''
+                ${rust}/bin/cargo fmt -- --check | tee $out
+              '';
+            };
+
+        };
+
       });
 }

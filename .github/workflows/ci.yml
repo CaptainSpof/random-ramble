@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: nix · setup
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os != 'windows-latest'
         uses: cachix/install-nix-action@v13
         with:
           install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
@@ -33,9 +33,12 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       - run: nix build
+        if: matrix.os != 'windows-latest'
       # does it has docker available ?
       - run: nix build .#dockerImage && docker load < result
+        if: matrix.os != 'windows-latest'
       - run: nix flake check
+        if: matrix.os != 'windows-latest'
 
       - name: rustup · setup
         uses: actions-rs/toolchain@v1
