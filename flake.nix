@@ -11,6 +11,7 @@
   outputs = { self, nixpkgs, rust-overlay, flake-utils, naersk, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
+        version = "0.3.0";
         name = "random-ramble";
         pname = "rr";
         overlays = [ (import rust-overlay) ];
@@ -68,7 +69,7 @@
           rust-fmt = with import nixpkgs { inherit system; };
             stdenv.mkDerivation {
               pname = "${name}-cargo-fmt-check";
-              version = "test";
+              inherit version;
 
               phases = [ "unpackPhase" "buildPhase" ];
 

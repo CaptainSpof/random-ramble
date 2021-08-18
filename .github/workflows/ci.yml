@@ -34,7 +34,7 @@ jobs:
             experimental-features = nix-command flakes
       - run: nix build
         if: matrix.os != 'windows-latest'
-      # does it has docker available ?
+      # TODO: send to a registry
       - run: nix build .#dockerImage && docker load < result
         if: matrix.os != 'windows-latest'
       - run: nix flake check
@@ -59,6 +59,7 @@ jobs:
           command: test
 
       - name: cargo · format
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/cargo@v1
         with:
           command: fmt
