@@ -36,7 +36,7 @@ jobs:
         if: matrix.os != 'windows-latest'
       # TODO: move to release.yml & send to a registry
       - run: nix build .#dockerImage && docker load < result
-        if: matrix.os != 'windows-latest'
+        if: matrix.os == 'ubuntu-latest'
       # HACK: get cargo build & test output after the fact
       - run: nix log
         if: matrix.os != 'windows-latest'
@@ -44,6 +44,7 @@ jobs:
         if: matrix.os != 'windows-latest'
 
       - name: rustup · setup
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -52,11 +53,13 @@ jobs:
           components: rustfmt, clippy
 
       - name: cargo · build
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/cargo@v1
         with:
           command: build
 
       - name: cargo · test
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/cargo@v1
         with:
           command: test
@@ -69,6 +72,7 @@ jobs:
           args: --all -- --check
 
       - name: cargo · clippy
+        if: matrix.os == 'windows-latest'
         uses: actions-rs/cargo@v1
         with:
           command: clippy

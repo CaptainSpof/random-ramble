@@ -30,6 +30,7 @@
           inherit pname;
           root = ./.;
           doCheck = true;
+          cargoTestCommands = inputList: inputList ++ [ ''cargo $cargo_options clippy --all --all-features --profile test''];
         };
         defaultPackage = packages."${name}";
 
