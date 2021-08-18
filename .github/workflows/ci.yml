@@ -34,8 +34,11 @@ jobs:
             experimental-features = nix-command flakes
       - run: nix build
         if: matrix.os != 'windows-latest'
-      # TODO: send to a registry
+      # TODO: move to release.yml & send to a registry
       - run: nix build .#dockerImage && docker load < result
+        if: matrix.os != 'windows-latest'
+      # HACK: get cargo build & test output after the fact
+      - run: nix log
         if: matrix.os != 'windows-latest'
       - run: nix flake check
         if: matrix.os != 'windows-latest'

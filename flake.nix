@@ -29,6 +29,7 @@
         packages."${name}" = naersk-lib.buildPackage {
           inherit pname;
           root = ./.;
+          doCheck = true;
         };
         defaultPackage = packages."${name}";
 
