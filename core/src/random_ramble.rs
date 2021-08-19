@@ -9,11 +9,11 @@ use std::io::{prelude::*, BufReader};
 use std::path::Path;
 use walkdir::{DirEntry, WalkDir};
 
-use crate::{bail, error::Jabber};
+use crate::{bail, error::RambleError};
 
 pub mod refactor {
 
-    use crate::error::Jabber;
+    use crate::error::{RambleError, Result};
     use serde::ser::{SerializeMap, Serializer};
     use serde::{Deserialize, Serialize};
     use walkdir::{DirEntry, WalkDir};
@@ -26,13 +26,13 @@ pub mod refactor {
     };
 
     use rand::Rng;
-    use tera::{Context, Error, Tera, Value};
+    use tera::{Context, Tera, Value};
 
     #[derive(Deserialize, Debug, Default, PartialEq)]
     // pub struct RambleMap<'a>(#[serde(borrow)] pub HashMap<RambleKind<'a>, Vec<Ramble<'a>>>);
     pub struct RambleMap<'a>(#[serde(borrow)] pub HashMap<RambleKind<'a>, Vec<Ramble>>);
     impl<'a> Serialize for &'a RambleMap<'_> {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
         where
             S: Serializer,
         {
@@ -50,19 +50,18 @@ pub mod refactor {
             .as_array()
             .expect("must provide values alongside random");
 
-        let category = if let Some(c) = args.get("c") {
-            // FIXME handle error more politely
+        let category = if let Some(category) = args.get("c") {
+            // FIXME handle errors more politely
             values
                 .iter()
-                .find(|x| {
+                .find(|&x| {
                     let a = x
                         .as_object()
-                        // .unwrap_or(&tera::Map::default())
-                        .expect("a get an obj")
+                        .expect("requires a valid object")
                         .get("category")
-                        .expect("got category");
+                        .expect("requires a valid category");
 
-                    a == c
+                    a == category
                 })
                 .ok_or("nope, no match")?
                 .as_object()
@@ -80,7 +79,7 @@ pub mod refactor {
             .as_array()
             .ok_or("fuck, no array")?;
 
-        if category.len() == 0 {
+        if category.is_empty() {
             return Ok(Value::default());
         }
         debug!("category len: {}", category.len());
@@ -108,15 +107,18 @@ pub mod refactor {
             Self::default()
         }
 
-        fn load_from_file(file: &DirEntry) -> Result<Ramble, Jabber> {
+        fn load_from_file(file: &DirEntry) -> Result<Ramble> {
             let file_name = file
                 .file_name()
                 .to_str()
-                .ok_or_else(|| Jabber::Custom("couldn't get filename".to_string()))?;
+                .ok_or_else(|| RambleError::Custom("couldn't get filename".to_string()))?;
 
             let f = std::fs::File::open(file.path())?;
             let buf = BufReader::new(f);
-            let entries = buf.lines().filter_map(Result::ok).collect::<Vec<String>>();
+            let entries = buf
+                .lines()
+                .filter_map(std::result::Result::ok)
+                .collect::<Vec<String>>();
 
             Ok(Ramble {
                 category: Some(file_name.into()),
@@ -156,10 +158,10 @@ pub mod refactor {
         }
 
         #[allow(unused_mut)]
-        pub fn with_adjs_path(mut self, path: &Path) -> Result<Self, Jabber> {
+        pub fn with_adjs_path(mut self, path: &Path) -> Result<Self> {
             let adjs: Vec<Ramble> = WalkDir::new(path)
                 .into_iter()
-                .filter_map(Result::ok)
+                .filter_map(std::result::Result::ok)
                 .filter(|metadata| metadata.file_type().is_file())
                 .map(|t| RandomRamble::load_from_file(&t))
                 .filter_map(Result::ok)
@@ -186,10 +188,10 @@ pub mod refactor {
         }
 
         #[allow(unused_mut)]
-        pub fn with_themes_path(mut self, path: &Path) -> Result<Self, Jabber> {
+        pub fn with_themes_path(mut self, path: &Path) -> Result<Self> {
             let themes: Vec<Ramble> = WalkDir::new(path)
                 .into_iter()
-                .filter_map(Result::ok)
+                .filter_map(std::result::Result::ok)
                 .filter(|metadata| metadata.file_type().is_file())
                 .map(|t| RandomRamble::load_from_file(&t))
                 .filter_map(Result::ok)
@@ -229,7 +231,7 @@ pub mod refactor {
 
         /// Generates a String from a template.
         /// use `to_string()` if you don't care about the Error.
-        pub fn replace(&self) -> Result<String, Error> {
+        pub fn replace(&self) -> Result<String> {
             let mut tera = Tera::default();
             tera.register_filter("rr", random_filter);
 
@@ -244,19 +246,19 @@ pub mod refactor {
                 Some(template) => {
                     debug!("template {:#?}", template);
                     tera.add_raw_template("rr", template)?;
-                    tera.render("rr", &context)
+                    tera.render("rr", &context).map_err(|e| e.into())
                 }
                 None => {
                     warn!("No template, using default");
                     // TODO make filter implicit
                     tera.add_raw_template("rr", "{{ adj | rr }} {{ theme | rr }}")?;
-                    tera.render("rr", &context)
+                    tera.render("rr", &context).map_err(|e| e.into())
                 }
             }
         }
 
-        fn set_context(&self) -> Result<Context, Error> {
-            Context::from_serialize(&self.rambles)
+        fn set_context(&self) -> Result<Context> {
+            Context::from_serialize(&self.rambles).map_err(|e| e.into())
         }
     }
 
@@ -278,7 +280,7 @@ pub mod refactor {
             let s = match self.replace() {
                 Ok(s) => s,
                 Err(e) => {
-                    eprintln!("Ima let you finish, but… {:#?}", e);
+                    eprintln!("Ima let you finish, but…\n{:#?}", e);
                     "???".into()
                 }
             };
@@ -355,7 +357,7 @@ impl RandomRamble {
         adjs: Vec<&str>,
         themes_path: &Path,
         themes: Vec<&str>,
-    ) -> Result<Self, Jabber> {
+    ) -> Result<Self, RambleError> {
         let (excluded_adjs, adjs_path) = (
             adjs.iter()
                 .filter(|t| t.starts_with('!'))
@@ -444,7 +446,7 @@ impl RandomRamble {
         number: usize,
         template: Option<&str>,
         with_details: bool,
-    ) -> Result<Vec<String>, Jabber> {
+    ) -> Result<Vec<String>, RambleError> {
         let re_adj = Regex::new(r"adj[^s]").expect("this shouldn't fail");
         let re_theme = Regex::new(r"theme[^s]").expect("this shouldn't fail");
 
@@ -633,7 +635,7 @@ struct Type {
 }
 
 impl Type {
-    fn new(file: &DirEntry) -> Result<Self, Jabber> {
+    fn new(file: &DirEntry) -> Result<Self, RambleError> {
         let f = std::fs::File::open(file.path())?;
         let buf = BufReader::new(f);
         let entries = buf.lines().filter_map(Result::ok).collect::<Vec<String>>();
@@ -671,7 +673,7 @@ impl Type {
             .collect()
     }
 
-    fn random_entry(&self, pattern: Option<&str>) -> Result<String, Jabber> {
+    fn random_entry(&self, pattern: Option<&str>) -> Result<String, RambleError> {
         match self.entries(pattern).choose(&mut rand::thread_rng()) {
             Some(r) => Ok(r.to_string()),
             None => match pattern {
