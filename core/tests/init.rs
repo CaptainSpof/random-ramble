@@ -3,7 +3,7 @@ mod test {
     use maplit::hashmap;
     use pretty_assertions::assert_eq;
     use random_ramble::refactor::{Ramble, RambleKind, RambleMap, RandomRamble};
-    use std::{collections::HashMap, hash::Hash, path::PathBuf};
+    use std::path::PathBuf;
 
     #[test]
     fn init_default() {
@@ -77,37 +77,34 @@ mod test {
         );
     }
 
-    // #[test]
-    // fn init_with_adjs_from_path() {
+    #[test]
+    #[should_panic(expected = "No such file or directory")]
+    fn fail_with_file_not_found() {
+        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.push("nope");
 
-    //     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    //     path.push("resources/tests/adjectives/");
+        RandomRamble::new().with_adjs_path(&path).unwrap();
+    }
 
-    //     let rr = RandomRamble::new()
-    //         .with_adjs_path(&path);
+    #[test]
+    fn init_with_adjectives_from_file_path() {
+        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.push("resources/tests/adjectives/pt");
 
-    //     assert_eq!(rr, RandomRamble {
-    //         rambles: vec![
-    //             Ramble_ {
-    //                 kind: RambleKind_::Adjective,
-    //                 value: "Ugly",
-    //                 file: Some(File {
-    //                     name: "test2",
-    //                     path: format!("{}test2", path.clone().into_os_string().into_string().expect("🤷"))
-    //                 })
-    //             },
-    //             Ramble_ {
-    //                 kind: RambleKind_::Adjective,
-    //                 value: "Pretty",
-    //                 file: Some(File {
-    //                     name: "test1",
-    //                     path: format!("{}test1", path.clone().into_os_string().into_string().expect("🤷"))
-    //                 })
-    //             },
-    //         ],
-    //         template: None
-    //     });
-    // }
+        let rr = match RandomRamble::new().with_adjs_path(&path) {
+            Ok(rr) => rr,
+            Err(e) => {
+                panic!("{} {:#?}", e, e);
+            }
+        };
+
+        assert!(&rr.rambles.0.eq(&hashmap! { RambleKind::Adjective => vec![
+            Ramble {
+                category: Some("pt".into()),
+                values: vec!["Tímido".into()]
+            },
+        ]}));
+    }
 
     #[test]
     fn init_with_themes() {
@@ -147,31 +144,24 @@ mod test {
         );
     }
 
-    fn keys_match<T: Eq + Hash, U, V>(map1: &HashMap<T, U>, map2: &HashMap<T, V>) -> bool {
-        map1.len() == map2.len() && map1.keys().all(|k| map2.contains_key(k))
-    }
-
     #[test]
     fn init_with_themes_from_file_path() {
         let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        path.push("resources/tests/themes/foobar");
+        path.push("resources/tests/themes/country");
 
         let rr = match RandomRamble::new().with_themes_path(&path) {
             Ok(rr) => rr,
             Err(e) => {
-                panic!("{}", e.to_string());
+                panic!("{} {:#?}", e, e);
             }
         };
 
-        assert!(keys_match(
-            &rr.rambles.0,
-            &hashmap! { RambleKind::Theme => vec![
-                Ramble {
-                    category: Some("foobar".into()),
-                    values: vec!["foo".into(), "bar".into()]
-                },
-            ]}
-        ));
+        assert!(&rr.rambles.0.eq(&hashmap! { RambleKind::Theme => vec![
+            Ramble {
+                category: Some("country".into()),
+                values: vec!["Portugal".into()]
+            },
+        ]}));
     }
 
     #[test]
@@ -186,19 +176,8 @@ mod test {
             }
         };
 
-        assert!(keys_match(
-            &rr.rambles.0,
-            &hashmap! { RambleKind::Theme => vec![
-                Ramble {
-                    category: Some("toto".into()),
-                    values: vec!["Toto".into(), "Titi".into()]
-                },
-                Ramble {
-                    category: Some("foobar".into()),
-                    values: vec!["foo".into(), "bar".into()]
-                },
-            ]}
-        ));
+        // TODO: actually test stuff
+        assert_eq!(rr.rambles.0.len(), 1);
     }
 
     #[test]

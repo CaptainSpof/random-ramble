@@ -13,7 +13,7 @@ use crate::{bail, error::RambleError};
 
 pub mod refactor {
 
-    use crate::error::{RambleError, Result};
+    use crate::error::Result;
     use serde::ser::{SerializeMap, Serializer};
     use serde::{Deserialize, Serialize};
     use walkdir::{DirEntry, WalkDir};
@@ -108,10 +108,7 @@ pub mod refactor {
         }
 
         fn load_from_file(file: &DirEntry) -> Result<Ramble> {
-            let file_name = file
-                .file_name()
-                .to_str()
-                .ok_or_else(|| RambleError::Custom("couldn't get filename".to_string()))?;
+            let file_name = file.file_name().to_string_lossy();
 
             let f = std::fs::File::open(file.path())?;
             let buf = BufReader::new(f);
@@ -157,14 +154,16 @@ pub mod refactor {
             self
         }
 
-        #[allow(unused_mut)]
-        pub fn with_adjs_path(mut self, path: &Path) -> Result<Self> {
-            let adjs: Vec<Ramble> = WalkDir::new(path)
+        pub fn with_adjs_path(self, path: &Path) -> Result<Self> {
+            // HACK: let std::io handle error for us
+            let _ = Path::new(path).metadata()?;
+
+            let adjs = WalkDir::new(path)
                 .into_iter()
                 .filter_map(std::result::Result::ok)
                 .filter(|metadata| metadata.file_type().is_file())
                 .map(|t| RandomRamble::load_from_file(&t))
-                .filter_map(Result::ok)
+                .filter_map(std::result::Result::ok)
                 .collect();
 
             debug!("adjs: {:#?}", &adjs);
@@ -187,8 +186,10 @@ pub mod refactor {
             self
         }
 
-        #[allow(unused_mut)]
-        pub fn with_themes_path(mut self, path: &Path) -> Result<Self> {
+        pub fn with_themes_path(self, path: &Path) -> Result<Self> {
+            // HACK: let std::io handle error for us
+            let _ = Path::new(path).metadata()?;
+
             let themes: Vec<Ramble> = WalkDir::new(path)
                 .into_iter()
                 .filter_map(std::result::Result::ok)
