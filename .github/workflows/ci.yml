@@ -33,14 +33,21 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       - run: nix build
+        name: nix · test and build the project
         if: matrix.os != 'windows-latest'
       # TODO: move to release.yml & send to a registry
       - run: nix build .#dockerImage && docker load < result
+        name: nix · create docker image
         if: matrix.os == 'ubuntu-latest'
       # HACK: get cargo build & test output after the fact
       - run: nix log
+        name: nix · show logs
         if: matrix.os != 'windows-latest'
       - run: nix flake check
+        name: nix · linter check
+        if: matrix.os != 'windows-latest'
+      - run: nix run
+        name: nix · smoke test
         if: matrix.os != 'windows-latest'
 
       - name: rustup · setup
@@ -77,3 +84,9 @@ jobs:
         with:
           command: clippy
           args: --all --all-features --profile test
+
+      - name: cargo · run
+        if: matrix.os == 'windows-latest'
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
