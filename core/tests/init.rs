@@ -78,7 +78,18 @@ mod test {
     }
 
     #[test]
+    #[should_panic(expected = "The system cannot find the file specified.")]
+    #[cfg(target_os = "windows")]
+    fn fail_with_file_not_found() {
+        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.push("nope");
+
+        RandomRamble::new().with_adjs_path(&path).unwrap();
+    }
+
+    #[test]
     #[should_panic(expected = "No such file or directory")]
+    #[cfg(not(target_os = "windows"))]
     fn fail_with_file_not_found() {
         let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         path.push("nope");
