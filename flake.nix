@@ -49,9 +49,10 @@
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
             # dev
-            rust-analyzer # rust lsp
+            rust-analyzer  # rust lsp
+            cargo-audit    # check for known vulnerabilities
+            cargo-edit     # add, remove deps from the command line
             cargo-outdated # show outdated rust deps
-            cargo-edit # add, remove deps from the command line
             # build
             act # run github actions locally
             rust
@@ -68,7 +69,7 @@
 
         checks = {
 
-          rust-fmt = with import nixpkgs { inherit system; };
+          rust-fmt = with import nixpkgs { inherit system overlays; };
             stdenv.mkDerivation {
               pname = "${name}-cargo-fmt-check";
               inherit version;
