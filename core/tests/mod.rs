@@ -41,6 +41,18 @@ mod test {
     }
 
     #[test]
+    fn template_replace_default_with_multiple() {
+        let adj = "Clever";
+        let theme = "Toto";
+
+        let r = RandomRamble::new().with_adj(adj).with_theme(theme).take(2);
+
+        assert_eq!(r, vec!["Clever Toto", "Clever Toto"]);
+
+        assert_eq!(r.len(), 2);
+    }
+
+    #[test]
     fn template_replace_default_vec() {
         let adjs = vec!["Clever", "Stupid"];
         let themes = vec!["Titi", "Fifi"];
@@ -64,8 +76,23 @@ mod test {
             .with_template("{{ adj | rr }} {{ emoji | rr }}");
 
         // TODO: find better way to test randomness
-        // assert_eq!(r.to_string(), "Clever 🦀");
         assert_eq!(r.to_string().len(), "Clever 🦀".len());
+    }
+
+    #[test]
+    fn template_replace_custom_ramble_vec_multiple() {
+        let adjs = vec!["Clever", "Stupid"];
+
+        let emojis = vec!["🦀", "🐕", "🐈", "🐖", "🐄"];
+
+        let r = RandomRamble::new()
+            .with_adjs(adjs)
+            .with_others("emoji", emojis)
+            .with_template("{{ adj | rr }} {{ emoji | rr }}")
+            .take(15);
+
+        // TODO: find better way to test randomness
+        assert_eq!(r.len(), 15);
     }
 
     #[test]
