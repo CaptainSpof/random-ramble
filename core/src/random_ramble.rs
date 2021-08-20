@@ -236,6 +236,10 @@ pub mod refactor {
             let mut tera = Tera::default();
             tera.register_filter("rr", random_filter);
 
+            for (name, addon) in jen::helper::builtin() {
+                tera.register_function(name, addon);
+            }
+
             let context = match self.context {
                 // FIXME can I avoid to clone ?
                 Some(ref context) => context.clone(),
