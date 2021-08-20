@@ -232,6 +232,29 @@ mod test {
     }
 
     #[test]
+    fn init_with_others_from_file_path() {
+        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.push("resources/tests/others/greetings/fr");
+
+        let rr = match RandomRamble::new().with_others_path("greetings", &path) {
+            Ok(rr) => rr,
+            Err(e) => {
+                panic!("{} {:#?}", e, e);
+            }
+        };
+
+        assert!(&rr
+            .rambles
+            .0
+            .eq(&hashmap! { RambleKind::Other("greetings") => vec![
+                Ramble {
+                    category: Some("fr".into()),
+                    values: vec!["Bonjour".into()]
+                },
+            ]}));
+    }
+
+    #[test]
     fn init_with_template() {
         let rr = RandomRamble::new().with_template("A {{adj}} for {{theme}}");
 

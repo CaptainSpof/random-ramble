@@ -34,6 +34,12 @@ fn main() {
             .expect("no themes path")
             .with_template(&template);
 
+        if config.number > 1 {
+            for r in rr.take(config.number) {
+                println!("{}", r);
+            }
+        }
+
         println!("{}", rr.to_string());
     } else {
         let rr = match RandomRamble::new(&config.adjectives_path, adjs, &config.themes_path, themes)

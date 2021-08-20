@@ -220,6 +220,22 @@ pub mod refactor {
             self
         }
 
+        pub fn with_others_path(self, kind: &'a str, path: &Path) -> Result<Self> {
+            // HACK: let std::io handle error for us
+            let _ = Path::new(path).metadata()?;
+
+            let others = WalkDir::new(path)
+                .into_iter()
+                .filter_map(std::result::Result::ok)
+                .filter(|metadata| metadata.file_type().is_file())
+                .map(|t| RandomRamble::load_from_file(&t))
+                .filter_map(std::result::Result::ok)
+                .collect();
+
+            debug!("others: {:#?}", &others);
+            Ok(self.with_rambles(RambleKind::Other(kind), others))
+        }
+
         pub fn with_template(mut self, template: &'a str) -> Self {
             self.template = Some(template);
             self
@@ -260,6 +276,10 @@ pub mod refactor {
                     tera.render("rr", &context).map_err(|e| e.into())
                 }
             }
+        }
+
+        pub fn take(&self, n: usize) -> Vec<String> {
+            (0..n).map(|_| self.to_string()).collect()
         }
 
         fn set_context(&self) -> Result<Context> {
