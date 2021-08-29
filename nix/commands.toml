@@ -1,0 +1,81 @@
+
+[[commands]]
+name = "update-rust-overlay"
+category = "flake"
+command = "nix flake lock --update-input rust-overlay"
+help = "update rust overlay"
+
+[[commands]]
+name = "update-naersk"
+category = "flake"
+command = "nix flake lock --update-input naersk"
+help = "update naersk overlay"
+
+[[commands]]
+name = "update-nixpkgs"
+category = "flake"
+command = "nix flake lock --update-input nixpkgs"
+help = "update nixpkgs channel"
+
+[[commands]]
+name = "update-all"
+category = "flake"
+command = "nix flake update"
+help = "update all channels"
+
+
+[[commands]]
+name = "rr"
+command = '''
+          ./target/debug/rr "$@"
+        '''
+help = "launch random-ramble"
+category = "random-ramble"
+
+[[commands]]
+name = "test-it"
+command = '''
+          cargo test
+        '''
+help = "test random-ramble"
+category = "dev"
+
+[[commands]]
+name = "bench-it"
+command = '''
+          cargo bench
+        '''
+help = "bench random-ramble"
+category = "dev"
+
+[[commands]]
+name = "format-it"
+command = '''
+          cargo fmt
+        '''
+help = "format random-ramble"
+category = "dev"
+
+[[commands]]
+name = "build-it"
+command = '''
+          cargo build
+        '''
+help = "build random-ramble"
+category = "dev"
+
+[[commands]]
+name = "dock-it"
+command = '''
+          nix build .#dockerImage && docker load < result
+        '''
+help = "create a docker container for random-ramble"
+category = "dev"
+
+[[commands]]
+name = "run-it"
+command = '''
+          cargo run
+        '''
+help = "run random-ramble"
+category = "dev"
