@@ -22,6 +22,7 @@ pub struct Config {
     pub number: usize,
 
     /// Path to the themes files
+    // TODO: respect XDG convention
     #[clap(long, env = "RR_THEMES_PATH", default_value = "./dict/themes")]
     pub themes_path: PathBuf,
 
@@ -32,6 +33,7 @@ pub struct Config {
     pub themes: Vec<String>,
 
     /// Path to the adjectives files
+    // TODO: respect XDG convention
     #[clap(long, env = "RR_ADJS_PATH", default_value = "./dict/adjectives")]
     pub adjectives_path: PathBuf,
 
