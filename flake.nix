@@ -13,8 +13,7 @@
     flake-utils.lib.eachSystem [
       "aarch64-linux"
       "i686-linux"
-      # FIXME: darwin won't build "framework not found Security"
-      # "x86_64-darwin"
+      "x86_64-darwin"
       "x86_64-linux"
     ] (system:
       let
