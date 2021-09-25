@@ -11,9 +11,9 @@ mod config;
 
 use config::{Command, Config};
 use random_ramble::refactor::RandomRamble as _RandomRamble;
-use random_ramble::RandomRamble;
+use random_ramble::{RambleError, RandomRamble};
 
-fn main() {
+fn main() -> Result<(), RambleError> {
     let config: Config = Config::parse();
     init_logger(config.verbose);
     debug!("config: {:#?}", config);
@@ -32,15 +32,16 @@ fn main() {
             .expect("no adjs path")
             .with_themes_path(&config.themes_path)
             .expect("no themes path")
-            .with_template(&template);
+            .with_template(&template)
+            .build()?;
 
         if config.number > 1 {
             for r in rr.take(config.number) {
                 println!("{}", r);
             }
+        } else {
+            println!("{}", rr.to_string());
         }
-
-        println!("{}", rr.to_string());
     } else {
         let rr = match RandomRamble::new(&config.adjectives_path, adjs, &config.themes_path, themes)
         {
@@ -88,6 +89,7 @@ fn main() {
             }
         };
     };
+    Ok(())
 }
 
 /// Init logger based on verbose value
