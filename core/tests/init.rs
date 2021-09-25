@@ -13,8 +13,9 @@ mod test {
             rr,
             RandomRamble {
                 rambles: RambleMap::default(),
-                template: None,
                 context: None,
+                templates: Vec::new(),
+                tera: None,
             }
         );
     }
@@ -32,7 +33,8 @@ mod test {
                     category: None,
                     values: vec!["Happy".into(), "Sad".into()]},
                 ]}),
-                template: None,
+                templates: Vec::new(),
+                tera: None,
                 context: None,
             }
         );
@@ -51,7 +53,8 @@ mod test {
                     category: None,
                     values: vec!["Pretty".into()]},
                 ]}),
-                template: None,
+                templates: Vec::new(),
+                tera: None,
                 context: None,
             }
         );
@@ -71,7 +74,8 @@ mod test {
                     category: None,
                     values: vec!["Kind".into(), "Ruthless".into()],
                 }]}),
-                template: None,
+                templates: Vec::new(),
+                tera: None,
                 context: None,
             }
         );
@@ -130,7 +134,8 @@ mod test {
                     category: None,
                     values: vec!["King".into()]},
                 ]}),
-                template: None,
+                templates: Vec::new(),
+                tera: None,
                 context: None,
             }
         );
@@ -149,7 +154,8 @@ mod test {
                     category: None,
                     values: vec!["Toto".into()]},
                 ]}),
-                template: None,
+                templates: Vec::new(),
+                tera: None,
                 context: None,
             }
         );
@@ -205,7 +211,8 @@ mod test {
                     values: vec!["🦀".into()],
                 },
                 ]}),
-                template: None,
+                templates: Vec::new(),
+                tera: None,
                 context: None,
             }
         );
@@ -225,7 +232,8 @@ mod test {
                     values: vec!["🦀".into()],
                 },
                 ]}),
-                template: None,
+                templates: Vec::new(),
+                tera: None,
                 context: None,
             }
         );
@@ -256,13 +264,14 @@ mod test {
 
     #[test]
     fn init_with_template() {
-        let rr = RandomRamble::new().with_template("A {{adj}} for {{theme}}");
+        let rr = RandomRamble::new().with_templates(vec!["A {{adj}} for {{theme}}"]);
 
         assert_eq!(
             rr,
             RandomRamble {
                 rambles: RambleMap::default(),
-                template: Some("A {{adj}} for {{theme}}"),
+                templates: vec!["A {{adj}} for {{theme}}"],
+                tera: None,
                 context: None,
             }
         );

@@ -5,6 +5,7 @@ name = "random-ramble"
 version = "0.3.0"
 
 [dependencies]
+derivative = "2.2.0"
 env_logger = "0.9"
 log = "0.4"
 maplit = "1.0.2"

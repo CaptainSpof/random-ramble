@@ -12,8 +12,10 @@ mod test {
 
         let r = RandomRamble::new()
             .with_template("A {{ adj | rr | lower }} {{ theme | rr }}")
-            .with_adj(adj.into())
-            .with_theme(theme.into());
+            .with_adj(adj)
+            .with_theme(theme)
+            .build()
+            .expect("we gud");
 
         assert_eq!(r.to_string(), "A clever Toto".to_string());
     }
@@ -23,7 +25,9 @@ mod test {
         let r = RandomRamble::new()
             .with_adjs(vec![])
             .with_themes(vec![])
-            .with_template("Nothing {{ theme | rr }}to{{ adj | rr }} see here.");
+            .with_template("Nothing {{ theme | rr }}to{{ adj | rr }} see here.")
+            .build()
+            .expect("we gud");
 
         assert_eq!(r.to_string(), "Nothing to see here.".to_string());
     }
@@ -34,8 +38,10 @@ mod test {
         let theme = "Toto";
 
         let r = RandomRamble::new()
-            .with_adj(adj.into())
-            .with_theme(theme.into());
+            .with_adj(adj)
+            .with_theme(theme)
+            .build()
+            .expect("we gud");
 
         assert_eq!(r.to_string(), "Clever Toto".to_string());
     }
@@ -45,7 +51,12 @@ mod test {
         let adj = "Clever";
         let theme = "Toto";
 
-        let r = RandomRamble::new().with_adj(adj).with_theme(theme).take(2);
+        let r = RandomRamble::new()
+            .with_adj(adj)
+            .with_theme(theme)
+            .build()
+            .expect("we gud")
+            .take(2);
 
         assert_eq!(r, vec!["Clever Toto", "Clever Toto"]);
 
@@ -57,7 +68,11 @@ mod test {
         let adjs = vec!["Clever", "Stupid"];
         let themes = vec!["Titi", "Fifi"];
 
-        let r = RandomRamble::new().with_adjs(adjs).with_themes(themes);
+        let r = RandomRamble::new()
+            .with_adjs(adjs)
+            .with_themes(themes)
+            .build()
+            .expect("we gud");
 
         // TODO: find better way to test randomness
         println!("{}", r.to_string());
@@ -73,7 +88,9 @@ mod test {
         let r = RandomRamble::new()
             .with_adjs(adjs)
             .with_others("emoji", emojis)
-            .with_template("{{ adj | rr }} {{ emoji | rr }}");
+            .with_template("{{ adj | rr }} {{ emoji | rr }}")
+            .build()
+            .expect("we gud");
 
         // TODO: find better way to test randomness
         assert_eq!(r.to_string().len(), "Clever 🦀".len());
@@ -89,6 +106,8 @@ mod test {
             .with_adjs(adjs)
             .with_others("emoji", emojis)
             .with_template("{{ adj | rr }} {{ emoji | rr }}")
+            .build()
+            .expect("we gud")
             .take(15);
 
         // TODO: find better way to test randomness
@@ -109,7 +128,9 @@ mod test {
         let r = RandomRamble::new()
             .with_ramble(RambleKind::Adjective, adjs)
             .with_others("emoji", emojis)
-            .with_template("{{ adj | rr }} {{ emoji | rr }}");
+            .with_template("{{ adj | rr }} {{ emoji | rr }}")
+            .build()
+            .expect("we gud");
 
         // TODO: find better way to test randomness
         // assert_eq!(r.to_string(), "Clever 🦀");
@@ -130,7 +151,9 @@ mod test {
         let r = RandomRamble::new()
             .with_ramble(RambleKind::Adjective, adjs)
             .with_others("emoji", emojis)
-            .with_template("{{ adj | rr(c='en') }} {{ emoji | rr }}");
+            .with_template("{{ adj | rr(c='en') }} {{ emoji | rr }}")
+            .build()
+            .expect("we gud");
 
         // TODO: find better way to test randomness
         // assert_eq!(r.to_string(), "Clever 🦀");
@@ -156,7 +179,9 @@ mod test {
         let r = RandomRamble::new()
             .with_rambles(RambleKind::Adjective, vec![en_adjs, fr_adjs])
             .with_others("emoji", emojis)
-            .with_template("{{ adj | rr(c='fr') }} {{ emoji | rr }}");
+            .with_template("{{ adj | rr(c='fr') }} {{ emoji | rr }}")
+            .build()
+            .expect("we gud");
 
         let r = r.to_string();
         let fr = vec!["Malin", "Idiot"];
@@ -188,7 +213,9 @@ mod test {
         let r = RandomRamble::new()
             .with_rambles(RambleKind::Adjective, vec![en_adjs, fr_adjs])
             .with_others("emoji", emojis)
-            .with_template("{{ adj | rr(c='pt') }} {{ emoji | rr }}");
+            .with_template("{{ adj | rr(c='pt') }} {{ emoji | rr }}")
+            .build()
+            .expect("we gud");
 
         let r = r.to_string();
         assert_eq!(r, "???");
@@ -208,6 +235,8 @@ mod test {
             .with_themes_path(&theme_path)
             .expect("themes not ok")
             .with_template("{{ adj | rr(c='en') }} {{ theme | rr(c='toto') }}")
+            .build()
+            .expect("we gud")
             .to_string();
 
         // assert_eq!(

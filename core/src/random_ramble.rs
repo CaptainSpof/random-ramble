@@ -14,6 +14,7 @@ use crate::{bail, error::RambleError};
 pub mod refactor {
 
     use crate::error::Result;
+    use derivative::Derivative;
     use serde::ser::{SerializeMap, Serializer};
     use serde::{Deserialize, Serialize};
     use walkdir::{DirEntry, WalkDir};
@@ -94,12 +95,15 @@ pub mod refactor {
 
     /// The struct that holds the collection of `rambles` and its template.
     // TODO fields shouldn't be pub
-    #[derive(Debug, PartialEq)]
+    #[derive(Derivative)]
+    #[derivative(Debug, PartialEq)]
     pub struct RandomRamble<'a> {
         // FIXME: how to use `T` for key ?
         pub rambles: RambleMap<'a>,
-        pub template: Option<&'a str>,
+        pub templates: Vec<&'a str>,
         pub context: Option<Context>,
+        #[derivative(PartialEq = "ignore")]
+        pub tera: Option<Tera>,
     }
 
     impl<'a> RandomRamble<'a> {
@@ -166,7 +170,7 @@ pub mod refactor {
                 .filter_map(std::result::Result::ok)
                 .collect();
 
-            debug!("adjs: {:#?}", &adjs);
+            // debug!("adjs: {:#?}", &adjs);
             Ok(self.with_rambles(RambleKind::Adjective, adjs))
         }
 
@@ -198,7 +202,7 @@ pub mod refactor {
                 .filter_map(Result::ok)
                 .collect();
 
-            debug!("themes: {:#?}", &themes);
+            // debug!("themes: {:#?}", &themes);
             Ok(self.with_rambles(RambleKind::Theme, themes))
         }
 
@@ -232,12 +236,17 @@ pub mod refactor {
                 .filter_map(std::result::Result::ok)
                 .collect();
 
-            debug!("others: {:#?}", &others);
+            // debug!("others: {:#?}", &others);
             Ok(self.with_rambles(RambleKind::Other(kind), others))
         }
 
         pub fn with_template(mut self, template: &'a str) -> Self {
-            self.template = Some(template);
+            self.templates.push(template);
+            self
+        }
+
+        pub fn with_templates(mut self, templates: Vec<&'a str>) -> Self {
+            self.templates = templates;
             self
         }
 
@@ -248,7 +257,33 @@ pub mod refactor {
 
         /// Generates a String from a template.
         /// use `to_string()` if you don't care about the Error.
-        pub fn replace(&self) -> Result<String> {
+        pub fn render(&self) -> Result<String> {
+            let template_name = match self.templates.len() {
+                0 => "rr".into(),
+                _ => format!(
+                    "rr{}",
+                    rand::thread_rng().gen_range(0..self.templates.len())
+                ),
+            };
+
+            self.tera
+                .as_ref()
+                .ok_or_else(|| fail!("invalid tera object"))?
+                .render(
+                    &template_name,
+                    self.context
+                        .as_ref()
+                        .ok_or_else(|| fail!("invalid context"))?,
+                )
+                .map_err(|e| e.into())
+        }
+
+        pub fn take(&self, n: usize) -> Vec<String> {
+            (0..n).map(|_| self.to_string()).collect()
+        }
+
+        fn get_tera(&self) -> Result<Tera> {
+            debug!("setting tera");
             let mut tera = Tera::default();
             tera.register_filter("rr", random_filter);
 
@@ -256,34 +291,35 @@ pub mod refactor {
                 tera.register_function(name, addon);
             }
 
-            let context = match self.context {
-                // FIXME can I avoid to clone ?
-                Some(ref context) => context.clone(),
-                None => self.set_context()?,
-            };
-            debug!("{:?}", &context);
-
-            match self.template {
-                Some(template) => {
-                    debug!("template {:#?}", template);
-                    tera.add_raw_template("rr", template)?;
-                    tera.render("rr", &context).map_err(|e| e.into())
-                }
-                None => {
-                    warn!("No template, using default");
+            match self.templates.len() {
+                0 => {
+                    warn!("No template found, using the default one…");
                     // TODO make filter implicit
                     tera.add_raw_template("rr", "{{ adj | rr }} {{ theme | rr }}")?;
-                    tera.render("rr", &context).map_err(|e| e.into())
+                }
+                _ => {
+                    tera.add_raw_templates(
+                        self.templates
+                            .iter()
+                            .enumerate()
+                            .map(|(i, t)| (format!("rr{}", i), t)),
+                    )?;
                 }
             }
+
+            Ok(tera)
         }
 
-        pub fn take(&self, n: usize) -> Vec<String> {
-            (0..n).map(|_| self.to_string()).collect()
-        }
-
-        fn set_context(&self) -> Result<Context> {
+        fn get_context(&self) -> Result<Context> {
+            debug!("setting context");
             Context::from_serialize(&self.rambles).map_err(|e| e.into())
+        }
+
+        pub fn build(mut self) -> Result<Self> {
+            self.tera = Some(self.get_tera()?);
+            self.context = Some(self.get_context()?);
+
+            Ok(self)
         }
     }
 
@@ -291,8 +327,9 @@ pub mod refactor {
         fn default() -> Self {
             Self {
                 rambles: RambleMap(HashMap::new()),
-                template: None,
+                templates: Vec::new(),
                 context: None,
+                tera: None,
             }
         }
     }
@@ -302,7 +339,7 @@ pub mod refactor {
             // TODO: handle error
             // let s = self.replace().unwrap_or_else(|_| "???".into());
 
-            let s = match self.replace() {
+            let s = match self.render() {
                 Ok(s) => s,
                 Err(e) => {
                     eprintln!("Ima let you finish, but…\n{:#?}", e);
