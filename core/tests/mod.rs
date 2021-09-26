@@ -3,7 +3,7 @@ mod test {
     use std::path::PathBuf;
 
     use pretty_assertions::assert_eq;
-    use random_ramble::refactor::{Ramble, RambleKind, RandomRamble};
+    use random_ramble::refactor::RandomRamble;
 
     #[test]
     fn template_replace() {
@@ -12,8 +12,8 @@ mod test {
 
         let r = RandomRamble::new()
             .with_template("A {{ adj | rr | lower }} {{ theme | rr }}")
-            .with_adj(adj)
-            .with_theme(theme)
+            .with_ramble("adj", adj)
+            .with_ramble("theme", theme)
             .build()
             .expect("we gud");
 
@@ -23,8 +23,8 @@ mod test {
     #[test]
     fn template_replace_empty_map() {
         let r = RandomRamble::new()
-            .with_adjs(vec![])
-            .with_themes(vec![])
+            .with_rambles("adj", vec![])
+            .with_rambles("theme", vec![])
             .with_template("Nothing {{ theme | rr }}to{{ adj | rr }} see here.")
             .build()
             .expect("we gud");
@@ -38,8 +38,8 @@ mod test {
         let theme = "Toto";
 
         let r = RandomRamble::new()
-            .with_adj(adj)
-            .with_theme(theme)
+            .with_ramble("adj", adj)
+            .with_ramble("theme", theme)
             .build()
             .expect("we gud");
 
@@ -52,8 +52,8 @@ mod test {
         let theme = "Toto";
 
         let r = RandomRamble::new()
-            .with_adj(adj)
-            .with_theme(theme)
+            .with_ramble("adj", adj)
+            .with_ramble("theme", theme)
             .build()
             .expect("we gud")
             .take(2);
@@ -69,8 +69,8 @@ mod test {
         let themes = vec!["Titi", "Fifi"];
 
         let r = RandomRamble::new()
-            .with_adjs(adjs)
-            .with_themes(themes)
+            .with_rambles("adj", adjs)
+            .with_rambles("theme", themes)
             .build()
             .expect("we gud");
 
@@ -86,8 +86,8 @@ mod test {
         let emojis = vec!["🦀", "🐕"];
 
         let r = RandomRamble::new()
-            .with_adjs(adjs)
-            .with_others("emoji", emojis)
+            .with_rambles("adj", adjs)
+            .with_rambles("emoji", emojis)
             .with_template("{{ adj | rr }} {{ emoji | rr }}")
             .build()
             .expect("we gud");
@@ -103,8 +103,8 @@ mod test {
         let emojis = vec!["🦀", "🐕", "🐈", "🐖", "🐄"];
 
         let r = RandomRamble::new()
-            .with_adjs(adjs)
-            .with_others("emoji", emojis)
+            .with_rambles("adj", adjs)
+            .with_rambles("emoji", emojis)
             .with_template("{{ adj | rr }} {{ emoji | rr }}")
             .build()
             .expect("we gud")
@@ -112,113 +112,6 @@ mod test {
 
         // TODO: find better way to test randomness
         assert_eq!(r.len(), 15);
-    }
-
-    #[test]
-    fn template_replace_custom_ramble_vec_with_ramble() {
-        let en = vec!["Clever".into(), "Stupid".into()];
-
-        let adjs = Ramble {
-            category: Some("en".into()),
-            values: en,
-        };
-
-        let emojis = vec!["🦀", "🐕"];
-
-        let r = RandomRamble::new()
-            .with_ramble(RambleKind::Adjective, adjs)
-            .with_others("emoji", emojis)
-            .with_template("{{ adj | rr }} {{ emoji | rr }}")
-            .build()
-            .expect("we gud");
-
-        // TODO: find better way to test randomness
-        // assert_eq!(r.to_string(), "Clever 🦀");
-        assert_eq!(r.to_string().len(), "Clever 🦀".len());
-    }
-
-    #[test]
-    fn template_replace_custom_ramble_vec_with_category() {
-        let en = vec!["Clever".into(), "Stupid".into()];
-
-        let adjs = Ramble {
-            category: Some("en".into()),
-            values: en,
-        };
-
-        let emojis = vec!["🦀", "🐕"];
-
-        let r = RandomRamble::new()
-            .with_ramble(RambleKind::Adjective, adjs)
-            .with_others("emoji", emojis)
-            .with_template("{{ adj | rr(c='en') }} {{ emoji | rr }}")
-            .build()
-            .expect("we gud");
-
-        // TODO: find better way to test randomness
-        // assert_eq!(r.to_string(), "Clever 🦀");
-        assert_eq!(r.to_string().len(), "Clever 🦀".len());
-    }
-
-    #[test]
-    fn template_replace_custom_ramble_vec_with_categories() {
-        let en = vec!["Clever".into(), "Stupid".into()];
-        let fr = vec!["Malin".into(), "Idiot".into()];
-
-        let en_adjs = Ramble {
-            category: Some("en".into()),
-            values: en,
-        };
-        let fr_adjs = Ramble {
-            category: Some("fr".into()),
-            values: fr,
-        };
-
-        let emojis = vec!["🦀".into(), "🐕".into()];
-
-        let r = RandomRamble::new()
-            .with_rambles(RambleKind::Adjective, vec![en_adjs, fr_adjs])
-            .with_others("emoji", emojis)
-            .with_template("{{ adj | rr(c='fr') }} {{ emoji | rr }}")
-            .build()
-            .expect("we gud");
-
-        let r = r.to_string();
-        let fr = vec!["Malin", "Idiot"];
-        assert!(fr
-            .iter()
-            .any(|&a| a == r.split(' ').collect::<Vec<&str>>()[0]));
-
-        // TODO: find better way to test randomness
-        // assert_eq!(r.to_string(), "Idiot 🐕");
-        assert_eq!(r.len(), "Malin 🦀".len());
-    }
-
-    #[test]
-    fn template_replace_custom_ramble_vec_with_categories_not_found() {
-        let en = vec!["Clever".into(), "Stupid".into()];
-        let fr = vec!["Malin".into(), "Idiot".into()];
-
-        let en_adjs = Ramble {
-            category: Some("en".into()),
-            values: en,
-        };
-        let fr_adjs = Ramble {
-            category: Some("fr".into()),
-            values: fr,
-        };
-
-        let emojis = vec!["🦀", "🐕"];
-
-        let r = RandomRamble::new()
-            .with_rambles(RambleKind::Adjective, vec![en_adjs, fr_adjs])
-            .with_others("emoji", emojis)
-            .with_template("{{ adj | rr(c='pt') }} {{ emoji | rr }}")
-            .build()
-            .expect("we gud");
-
-        let r = r.to_string();
-        assert_eq!(r, "???");
     }
 
     #[test]
@@ -230,9 +123,9 @@ mod test {
         theme_path.push("resources/tests/themes/");
 
         let rr = RandomRamble::new()
-            .with_adjs_path(&adj_path)
+            .with_rambles_path("adj", &adj_path)
             .expect("adjs not ok")
-            .with_themes_path(&theme_path)
+            .with_rambles_path("theme", &theme_path)
             .expect("themes not ok")
             .with_template("{{ adj | rr(c='en') }} {{ theme | rr(c='toto') }}")
             .build()
