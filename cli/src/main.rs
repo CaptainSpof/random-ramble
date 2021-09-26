@@ -22,25 +22,18 @@ fn main() -> Result<(), RambleError> {
     let adjs = config.adjs.iter().map(AsRef::as_ref).collect();
 
     if config.refactor {
-        let template = config
-            .template
-            .unwrap_or_else(|| "{{ adj | rr }} {{ theme | rr }}".to_string());
         let rr = _RandomRamble::new()
-            .with_adjs(adjs)
-            .with_themes(themes)
-            .with_adjs_path(&config.adjectives_path)
+            .with_rambles("adj", adjs)
+            .with_rambles("theme", themes)
+            .with_rambles_path("adj", &config.adjectives_path)
             .expect("no adjs path")
-            .with_themes_path(&config.themes_path)
+            .with_rambles_path("theme", &config.themes_path)
             .expect("no themes path")
-            .with_template(&template)
+            .with_templates(config.templates.iter().map(AsRef::as_ref).collect())
             .build()?;
 
-        if config.number > 1 {
-            for r in rr.take(config.number) {
-                println!("{}", r);
-            }
-        } else {
-            println!("{}", rr.to_string());
+        for r in rr.take(config.number) {
+            println!("{}", r);
         }
     } else {
         let rr = match RandomRamble::new(&config.adjectives_path, adjs, &config.themes_path, themes)
@@ -71,7 +64,7 @@ fn main() -> Result<(), RambleError> {
                 let ramble = rr.randomize(
                     config.pattern.as_deref(),
                     config.number,
-                    config.template.as_deref(),
+                    Some(&config.template),
                     config.verbose >= 1,
                 );
 

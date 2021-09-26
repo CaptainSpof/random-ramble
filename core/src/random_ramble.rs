@@ -1,16 +1,3 @@
-use rand::seq::SliceRandom;
-use regex::Regex;
-use serde::Serialize;
-use std::error::Error as stdError;
-use tera::{Context, Tera};
-
-use std::collections::BTreeMap;
-use std::io::{prelude::*, BufReader};
-use std::path::Path;
-use walkdir::{DirEntry, WalkDir};
-
-use crate::{bail, error::RambleError};
-
 pub mod refactor {
 
     use crate::error::Result;
@@ -48,9 +35,17 @@ pub mod refactor {
 
     /// A `tera` filter to get random value from an array
     pub fn random_filter(value: &Value, args: &HashMap<String, Value>) -> tera::Result<Value> {
+        debug!("value: {:#?}", value);
+
         let values = value
             .as_array()
             .expect("must provide values alongside random");
+        if values.is_empty() {
+            debug!("empty values");
+            return Ok(Value::default());
+        }
+
+        debug!("values: {:#?}", values);
 
         let category = if let Some(category) = args.get("c") {
             // FIXME handle errors more politely
@@ -74,22 +69,29 @@ pub mod refactor {
             values[rng].as_object()
         };
 
+        debug!("category: {:#?}", category);
+
         let category = category
-            .ok_or("oups, no object")?
+            // .ok_or("oups, no object")?
+            .expect("oups, no object")
             .get("values")
-            .ok_or("shit, no values")?
+            // .ok_or("shit, no values")?
+            .expect("shit, no values")
             .as_array()
-            .ok_or("fuck, no array")?;
+            .expect("fuck, no array");
+        // .ok_or("fuck, no array")?;
+
+        debug!("category: {:#?}", category);
 
         if category.is_empty() {
+            debug!("empty category");
             return Ok(Value::default());
         }
-        debug!("category len: {}", category.len());
+
         let rng = rand::thread_rng().gen_range(0..category.len());
-        debug!("rng: {}", rng);
         let val = category[rng].to_owned();
 
-        debug!("val: {}", &val);
+        debug!("val {}", val);
 
         Ok(val)
     }
@@ -128,94 +130,16 @@ pub mod refactor {
             })
         }
 
-        // pub fn with_ramble(mut self, kind: RambleKind<'a>, ramble: Ramble<'a>) -> Self {
-        pub fn with_ramble(mut self, kind: RambleKind<'a>, ramble: Ramble) -> Self {
-            self.rambles.0.insert(kind, vec![ramble]);
-            self
-        }
-
-        // pub fn with_rambles(mut self, kind: RambleKind<'a>, rambles: Vec<Ramble<'a>>) -> Self {
-        pub fn with_rambles(mut self, kind: RambleKind<'a>, rambles: Vec<Ramble>) -> Self {
-            // FIXME kind can vary
-            self.rambles.0.insert(kind, rambles);
-            self
-        }
-
-        pub fn with_adj(mut self, value: &'a str) -> Self {
+        pub fn with_ramble(mut self, kind: &'a str, value: &'a str) -> Self {
             self.rambles
                 .0
-                .insert(RambleKind::Adjective, vec![value.into()]);
+                // .insert(RambleKind::Ramble(kind), vec![value.into()]);
+                .insert(kind.into(), vec![value.into()]);
             self
         }
 
-        // pub fn with_adjs(mut self, values: Vec<&'a str>) -> Self {
-        pub fn with_adjs(mut self, values: Vec<&str>) -> Self {
-            let adjs = Ramble {
-                category: None,
-                // values: values,
-                values: values.into_iter().map(|v| v.into()).collect(),
-            };
-            self.rambles.0.insert(RambleKind::Adjective, vec![adjs]);
-            self
-        }
-
-        pub fn with_adjs_path(self, path: &Path) -> Result<Self> {
-            // HACK: let std::io handle error for us
-            let _ = Path::new(path).metadata()?;
-
-            let adjs = WalkDir::new(path)
-                .into_iter()
-                .filter_map(std::result::Result::ok)
-                .filter(|metadata| metadata.file_type().is_file())
-                .map(|t| RandomRamble::load_from_file(&t))
-                .filter_map(std::result::Result::ok)
-                .collect();
-
-            // debug!("adjs: {:#?}", &adjs);
-            Ok(self.with_rambles(RambleKind::Adjective, adjs))
-        }
-
-        pub fn with_theme(mut self, value: &'a str) -> Self {
-            self.rambles.0.insert(RambleKind::Theme, vec![value.into()]);
-            self
-        }
-
-        // pub fn with_themes(mut self, values: Vec<&'a str>) -> Self {
-        pub fn with_themes(mut self, values: Vec<&str>) -> Self {
-            let themes = Ramble {
-                category: None,
-                // values,
-                values: values.into_iter().map(|v| v.into()).collect(),
-            };
-            self.rambles.0.insert(RambleKind::Theme, vec![themes]);
-            self
-        }
-
-        pub fn with_themes_path(self, path: &Path) -> Result<Self> {
-            // HACK: let std::io handle error for us
-            let _ = Path::new(path).metadata()?;
-
-            let themes: Vec<Ramble> = WalkDir::new(path)
-                .into_iter()
-                .filter_map(std::result::Result::ok)
-                .filter(|metadata| metadata.file_type().is_file())
-                .map(|t| RandomRamble::load_from_file(&t))
-                .filter_map(Result::ok)
-                .collect();
-
-            // debug!("themes: {:#?}", &themes);
-            Ok(self.with_rambles(RambleKind::Theme, themes))
-        }
-
-        pub fn with_other(mut self, kind: &'a str, value: &'a str) -> Self {
-            self.rambles
-                .0
-                .insert(RambleKind::Other(kind), vec![value.into()]);
-            self
-        }
-
-        // pub fn with_others(mut self, kind: &'a str, values: Vec<&'a str>) -> Self {
-        pub fn with_others(mut self, kind: &'a str, values: Vec<&str>) -> Self {
+        // pub fn with_rambles(mut self, kind: &'a str, values: Vec<&'a str>) -> Self {
+        pub fn with_rambles(mut self, kind: &'a str, values: Vec<&str>) -> Self {
             let others = Ramble {
                 category: None,
                 // values,
@@ -225,11 +149,11 @@ pub mod refactor {
             self
         }
 
-        pub fn with_others_path(self, kind: &'a str, path: &Path) -> Result<Self> {
+        pub fn with_rambles_path(mut self, kind: &'a str, path: &Path) -> Result<Self> {
             // HACK: let std::io handle error for us
             let _ = Path::new(path).metadata()?;
 
-            let others = WalkDir::new(path)
+            let rambles = WalkDir::new(path)
                 .into_iter()
                 .filter_map(std::result::Result::ok)
                 .filter(|metadata| metadata.file_type().is_file())
@@ -237,8 +161,10 @@ pub mod refactor {
                 .filter_map(std::result::Result::ok)
                 .collect();
 
-            // debug!("others: {:#?}", &others);
-            Ok(self.with_rambles(RambleKind::Other(kind), others))
+            // debug!("others({}): {:#?}", kind, &others);
+
+            self.rambles.0.insert(kind.into(), rambles);
+            Ok(self)
         }
 
         pub fn with_template(mut self, template: &'a str) -> Self {
@@ -267,6 +193,15 @@ pub mod refactor {
                 ),
             };
 
+            debug!("template name: {}", template_name);
+            debug!("template len: {}", self.templates.len());
+            debug!("template: {:#?}", self.templates);
+
+            debug!(
+                "context: {:#?}",
+                self.context.as_ref().expect("context not ok")
+            );
+
             self.tera
                 .as_ref()
                 .ok_or_else(|| fail!("invalid tera object"))?
@@ -284,7 +219,7 @@ pub mod refactor {
         }
 
         fn get_tera(&self) -> Result<Tera> {
-            debug!("setting tera");
+            debug!("getting tera");
             let mut tera = Tera::default();
             tera.register_filter("rr", random_filter);
 
@@ -312,7 +247,8 @@ pub mod refactor {
         }
 
         fn get_context(&self) -> Result<Context> {
-            debug!("setting context");
+            debug!("getting context");
+            debug!("rambles: {:#?}", &self.rambles);
             Context::from_serialize(&self.rambles).map_err(|e| e.into())
         }
 
@@ -372,41 +308,49 @@ pub mod refactor {
         fn from(source: &str) -> Self {
             Self {
                 category: None,
-                // values: vec![source],
                 values: vec![source.into()],
             }
         }
     }
 
     #[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Hash, Clone)]
-    pub enum RambleKind<'a> {
-        // pub enum RambleKind {
-        Adjective,
-        Theme,
-        Other(&'a str),
-    }
+    pub struct RambleKind<'a>(pub &'a str);
 
     impl<'a> Display for RambleKind<'a> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            let s = match self {
-                RambleKind::Adjective => "adj",
-                RambleKind::Theme => "theme",
-                RambleKind::Other(o) => o,
-            };
-            write!(f, "{}", s)
+            // let s = match self {
+            //     RambleKind::Adjective => "adj",
+            //     RambleKind::Theme => "theme",
+            //     RambleKind::Ramble(r) => r,
+            // };
+            write!(f, "{}", self.0)
         }
     }
 
     impl<'a> From<&'a str> for RambleKind<'a> {
         fn from(source: &'a str) -> Self {
-            match source {
-                "adj" => Self::Adjective,
-                "theme" => Self::Theme,
-                other => Self::Other(other),
-            }
+            Self(source)
+            // match source {
+            //     "adj" => Self::Adjective,
+            //     "theme" => Self::Theme,
+            //     ramble => Self::Ramble(ramble),
+            // }
         }
     }
 }
+
+use rand::seq::SliceRandom;
+use regex::Regex;
+use serde::Serialize;
+use std::error::Error as stdError;
+use tera::{Context, Tera};
+
+use std::collections::BTreeMap;
+use std::io::{prelude::*, BufReader};
+use std::path::Path;
+use walkdir::{DirEntry, WalkDir};
+
+use crate::{bail, error::RambleError};
 
 #[derive(Debug)]
 pub struct RandomRamble {
