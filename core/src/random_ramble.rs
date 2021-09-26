@@ -27,6 +27,7 @@ pub mod refactor {
     };
 
     use rand::Rng;
+    use rayon::prelude::*;
     use tera::{Context, Tera, Value};
 
     #[derive(Deserialize, Debug, Default, PartialEq)]
@@ -279,7 +280,7 @@ pub mod refactor {
         }
 
         pub fn take(&self, n: usize) -> Vec<String> {
-            (0..n).map(|_| self.to_string()).collect()
+            (0..n).into_par_iter().map(|_| self.to_string()).collect()
         }
 
         fn get_tera(&self) -> Result<Tera> {
