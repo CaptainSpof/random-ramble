@@ -23,7 +23,7 @@ version = "1.0.130"
 
 [dependencies.tera]
 features = ["builtins"]
-version = "1.12"
+version = "1.13"
 
 [dev-dependencies]
 pretty_assertions = "1.0.0"
