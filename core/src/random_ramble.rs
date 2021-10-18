@@ -72,14 +72,11 @@ pub mod refactor {
         debug!("category: {:#?}", category);
 
         let category = category
-            // .ok_or("oups, no object")?
-            .expect("oups, no object")
+            .ok_or("oups, no object")?
             .get("values")
-            // .ok_or("shit, no values")?
-            .expect("shit, no values")
+            .ok_or("shit, no values")?
             .as_array()
-            .expect("fuck, no array");
-        // .ok_or("fuck, no array")?;
+            .ok_or("fuck, no array")?;
 
         debug!("category: {:#?}", category);
 
@@ -131,10 +128,7 @@ pub mod refactor {
         }
 
         pub fn with_ramble(mut self, kind: &'a str, value: &'a str) -> Self {
-            self.rambles
-                .0
-                // .insert(RambleKind::Ramble(kind), vec![value.into()]);
-                .insert(kind.into(), vec![value.into()]);
+            self.rambles.0.insert(kind.into(), vec![value.into()]);
             self
         }
 
@@ -192,15 +186,6 @@ pub mod refactor {
                     rand::thread_rng().gen_range(0..self.templates.len())
                 ),
             };
-
-            debug!("template name: {}", template_name);
-            debug!("template len: {}", self.templates.len());
-            debug!("template: {:#?}", self.templates);
-
-            debug!(
-                "context: {:#?}",
-                self.context.as_ref().expect("context not ok")
-            );
 
             self.tera
                 .as_ref()
@@ -318,11 +303,6 @@ pub mod refactor {
 
     impl<'a> Display for RambleKind<'a> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            // let s = match self {
-            //     RambleKind::Adjective => "adj",
-            //     RambleKind::Theme => "theme",
-            //     RambleKind::Ramble(r) => r,
-            // };
             write!(f, "{}", self.0)
         }
     }
@@ -330,11 +310,6 @@ pub mod refactor {
     impl<'a> From<&'a str> for RambleKind<'a> {
         fn from(source: &'a str) -> Self {
             Self(source)
-            // match source {
-            //     "adj" => Self::Adjective,
-            //     "theme" => Self::Theme,
-            //     ramble => Self::Ramble(ramble),
-            // }
         }
     }
 }
