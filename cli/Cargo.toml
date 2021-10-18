@@ -11,8 +11,8 @@ edition = "2018"
 random-ramble = { path = "../core" }
 
 # log
-log = "0.4"
-env_logger = "0.9"
+log = "0.4.14"
+env_logger = "0.9.0"
 
-clap = "=3.0.0-beta.5"
+clap = "3.0.0-beta.5"
 serde = { version = "1.0.130", features = ["derive"] }
