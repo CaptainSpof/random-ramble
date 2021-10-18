@@ -4,7 +4,7 @@ extern crate log;
 use env_logger::{Builder, WriteStyle};
 use log::LevelFilter;
 
-use clap::Clap;
+use clap::Parser;
 
 mod cmds;
 mod config;
