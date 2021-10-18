@@ -1,12 +1,11 @@
-use clap::{crate_version, AppSettings, Clap};
+use clap::{crate_version, Parser};
 
 use std::path::PathBuf;
 
 use std::io::{self, Read};
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(author, name = "random-ramble", about = "A simple random words generator", version = crate_version!())]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct Config {
     /// Verbose mode (-v, -vv, -vvv)
     #[clap(
@@ -62,7 +61,7 @@ pub struct Config {
     pub cmd: Option<Command>,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(name = "Command")]
 pub enum Command {
     #[clap(name = "add")]
@@ -73,7 +72,7 @@ pub enum Command {
     Delete(Edit),
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Edit {
     /// Provide a theme
     pub theme: String,
