@@ -15,7 +15,7 @@ pub mod refactor {
 
     use rand::Rng;
     use rayon::prelude::*;
-    use tera::{Context, CtxThreadSafe, Tera, Value};
+    use tera::{Context, Tera, Value};
 
     #[derive(Deserialize, Debug, Default, PartialEq)]
     // pub struct RambleMap<'a>(#[serde(borrow)] pub HashMap<RambleKind<'a>, Vec<Ramble<'a>>>);
@@ -101,7 +101,7 @@ pub mod refactor {
         // FIXME: how to use `T` for key ?
         pub rambles: RambleMap<'a>,
         pub templates: Vec<&'a str>,
-        pub context: Option<Context<CtxThreadSafe>>,
+        pub context: Option<Context>,
         #[derivative(PartialEq = "ignore")]
         pub tera: Option<Tera>,
     }
@@ -171,7 +171,7 @@ pub mod refactor {
             self
         }
 
-        pub fn with_context(mut self, context: Context<CtxThreadSafe>) -> Self {
+        pub fn with_context(mut self, context: Context) -> Self {
             self.context = Some(context);
             self
         }
@@ -231,7 +231,7 @@ pub mod refactor {
             Ok(tera)
         }
 
-        fn get_context(&self) -> Result<Context<CtxThreadSafe>> {
+        fn get_context(&self) -> Result<Context> {
             debug!("getting context");
             debug!("rambles: {:#?}", &self.rambles);
             Context::from_serialize(&self.rambles).map_err(|e| e.into())
