@@ -1,6 +1,6 @@
 [package]
 authors = ["Cédric Da Fonseca <dafonseca.cedric@gmail.com>"]
-edition = "2018"
+edition = "2021"
 name = "random-ramble"
 version = "0.3.0"
 
