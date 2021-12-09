@@ -1,18 +1,23 @@
-use clap::{crate_version, Parser};
+use clap::Parser;
 
 use std::path::PathBuf;
 
 use std::io::{self, Read};
 
 #[derive(Parser, Debug)]
-#[clap(author, name = "random-ramble", about = "A simple random words generator", version = crate_version!())]
+#[clap(
+    author,
+    name = "random-ramble",
+    about = "A simple random words generator",
+    version
+)]
 pub struct Config {
     /// Verbose mode (-v, -vv, -vvv)
     #[clap(
         short,
         long,
         parse(from_occurrences),
-        long_about = "-v:\t\tINFO|WARN|ERROR\n-vv:\tINFO|WARN|ERROR|DEBUG\n-vvv:\tINFO|WARN|ERROR|DEBUG|TRACE"
+        long_help = "-v:\t\tINFO|WARN|ERROR\n-vv:\tINFO|WARN|ERROR|DEBUG\n-vvv:\tINFO|WARN|ERROR|DEBUG|TRACE"
     )]
     pub verbose: u8,
 
