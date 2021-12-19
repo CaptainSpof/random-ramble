@@ -16,7 +16,7 @@ use random_ramble::{RambleError, RandomRamble};
 fn main() -> Result<(), RambleError> {
     let config: Config = Config::parse();
     init_logger(config.verbose);
-    info!("config: {:#?}", config);
+    debug!("config: {:#?}", config);
 
     let themes = config.themes.iter().map(AsRef::as_ref).collect();
     let adjs = config.adjs.iter().map(AsRef::as_ref).collect();
@@ -67,20 +67,17 @@ fn main() -> Result<(), RambleError> {
                 }
             }
         };
-
-
     } else {
-
         let templates = config.templates.iter().map(AsRef::as_ref).collect();
         // TODO: add filter to rambles
         let rr = _RandomRamble::new()
             .with_filter(config.pattern.as_deref())
             .with_rambles("adj", adjs)
             .with_rambles("theme", themes)
-            // .with_rambles_path("adj", &config.adjectives_path)?
-        // .with_rambles_path("theme", &config.themes_path)?
-        .with_templates(templates)
-        .build()?;
+            .with_rambles_path("adj", &config.adjectives_path)?
+            .with_rambles_path("theme", &config.themes_path)?
+            .with_templates(templates)
+            .build()?;
 
         for r in rr.take(config.number) {
             println!("{}", r);

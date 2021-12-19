@@ -48,9 +48,7 @@ pub struct Config {
     /// Provide a template from which to generate words
     // FIXME: use custom rr filter
     #[clap(long, default_value = "{{ adj }} {{ theme }}")]
-    #[deprecated(
-        note = "Replaced with `templates`"
-    )]
+    #[deprecated(note = "Replaced with `templates`")]
     pub template: String,
 
     /// Provide templates from which to generate words

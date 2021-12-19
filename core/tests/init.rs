@@ -3,7 +3,7 @@ mod test {
     use maplit::hashmap;
     use pretty_assertions::assert_eq;
     use random_ramble::refactor::{Ramble, RambleKind, RambleMap, RandomRamble};
-    use std::{path::PathBuf, collections::HashMap};
+    use std::{collections::HashMap, path::PathBuf};
 
     #[test]
     fn init_default() {
@@ -259,14 +259,12 @@ mod test {
             }
         };
 
-        assert!(
-            &rr.rambles.eq(&hashmap! { RambleKind("greetings") => vec![
-                Ramble {
-                    category: Some("fr".into()),
-                    values: vec!["Bonjour".into()]
-                },
-            ]})
-        );
+        assert!(&rr.rambles.eq(&hashmap! { RambleKind("greetings") => vec![
+            Ramble {
+                category: Some("fr".into()),
+                values: vec!["Bonjour".into()]
+            },
+        ]}));
     }
 
     #[test]
