@@ -3,7 +3,7 @@ mod test {
     use maplit::hashmap;
     use pretty_assertions::assert_eq;
     use random_ramble::refactor::{Ramble, RambleKind, RambleMap, RandomRamble};
-    use std::path::PathBuf;
+    use std::{path::PathBuf, collections::HashMap};
 
     #[test]
     fn init_default() {
@@ -12,8 +12,9 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: RambleMap::default(),
+                rambles: HashMap::new(),
                 context: None,
+                filter: None,
                 templates: Vec::new(),
                 tera: None,
             }
@@ -29,13 +30,14 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: RambleMap(hashmap! { RambleKind("adj") => vec![Ramble {
+                rambles: hashmap! { RambleKind("adj") => vec![Ramble {
                     category: None,
                     values: vec!["Happy".into(), "Sad".into()]},
-                ]}),
+                ]},
+                context: None,
+                filter: None,
                 templates: Vec::new(),
                 tera: None,
-                context: None,
             }
         );
     }
@@ -49,13 +51,14 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: RambleMap(hashmap! { RambleKind("adj") => vec![Ramble {
+                rambles: hashmap! { RambleKind("adj") => vec![Ramble {
                     category: None,
                     values: vec!["Pretty".into()]},
-                ]}),
+                ]},
+                context: None,
+                filter: None,
                 templates: Vec::new(),
                 tera: None,
-                context: None,
             }
         );
     }
@@ -70,13 +73,14 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: RambleMap(hashmap! { RambleKind("adj") => vec![Ramble {
+                rambles: hashmap! { RambleKind("adj") => vec![Ramble {
                     category: None,
                     values: vec!["Kind".into(), "Ruthless".into()],
-                }]}),
+                }]},
+                context: None,
+                filter: None,
                 templates: Vec::new(),
                 tera: None,
-                context: None,
             }
         );
     }
@@ -113,7 +117,7 @@ mod test {
             }
         };
 
-        assert!(&rr.rambles.0.eq(&hashmap! { RambleKind("adj") => vec![
+        assert!(&rr.rambles.eq(&hashmap! { RambleKind("adj") => vec![
             Ramble {
                 category: Some("pt".into()),
                 values: vec!["Tímido".into()]
@@ -130,13 +134,14 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: RambleMap(hashmap! { RambleKind("theme") => vec![Ramble {
+                rambles: hashmap! { RambleKind("theme") => vec![Ramble {
                     category: None,
                     values: vec!["King".into()]},
-                ]}),
+                ]},
+                context: None,
+                filter: None,
                 templates: Vec::new(),
                 tera: None,
-                context: None,
             }
         );
     }
@@ -150,13 +155,14 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: RambleMap(hashmap! { RambleKind("theme") => vec![Ramble {
+                rambles: hashmap! { RambleKind("theme") => vec![Ramble {
                     category: None,
                     values: vec!["Toto".into()]},
-                ]}),
+                ]},
+                context: None,
+                filter: None,
                 templates: Vec::new(),
                 tera: None,
-                context: None,
             }
         );
     }
@@ -173,7 +179,7 @@ mod test {
             }
         };
 
-        assert!(&rr.rambles.0.eq(&hashmap! { RambleKind("theme") => vec![
+        assert!(&rr.rambles.eq(&hashmap! { RambleKind("theme") => vec![
             Ramble {
                 category: Some("country".into()),
                 values: vec!["Portugal".into()]
@@ -194,7 +200,7 @@ mod test {
         };
 
         // TODO: actually test stuff
-        assert_eq!(rr.rambles.0.len(), 1);
+        assert_eq!(rr.rambles.len(), 1);
     }
 
     #[test]
@@ -206,14 +212,15 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: RambleMap(hashmap! { RambleKind("emoji") => vec![Ramble {
+                rambles: hashmap! { RambleKind("emoji") => vec![Ramble {
                     category: None,
                     values: vec!["🦀".into()],
                 },
-                ]}),
+                ]},
+                context: None,
+                filter: None,
                 templates: Vec::new(),
                 tera: None,
-                context: None,
             }
         );
     }
@@ -227,14 +234,15 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: RambleMap(hashmap! { RambleKind("emoji") => vec![Ramble {
+                rambles: hashmap! { RambleKind("emoji") => vec![Ramble {
                     category: None,
                     values: vec!["🦀".into()],
                 },
-                ]}),
+                ]},
+                context: None,
+                filter: None,
                 templates: Vec::new(),
                 tera: None,
-                context: None,
             }
         );
     }
@@ -252,7 +260,7 @@ mod test {
         };
 
         assert!(
-            &rr.rambles.0.eq(&hashmap! { RambleKind("greetings") => vec![
+            &rr.rambles.eq(&hashmap! { RambleKind("greetings") => vec![
                 Ramble {
                     category: Some("fr".into()),
                     values: vec!["Bonjour".into()]
@@ -268,10 +276,11 @@ mod test {
         assert_eq!(
             rr,
             RandomRamble {
-                rambles: RambleMap::default(),
+                rambles: HashMap::new(),
+                context: None,
+                filter: None,
                 templates: vec!["A {{adj}} for {{theme}}"],
                 tera: None,
-                context: None,
             }
         );
     }
