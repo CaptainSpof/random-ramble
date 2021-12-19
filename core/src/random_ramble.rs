@@ -2,6 +2,7 @@ pub mod refactor {
 
     use crate::error::Result;
     use derivative::Derivative;
+    use regex::Regex;
     use serde::ser::{SerializeMap, Serializer};
     use serde::{Deserialize, Serialize};
     use walkdir::{DirEntry, WalkDir};
@@ -61,7 +62,7 @@ pub mod refactor {
                     a == category
                 })
                 .ok_or("nope, no match")?
-                .as_object()
+            .as_object()
         } else {
             // get random category
             debug!("values len: {}", values.len());
@@ -73,10 +74,10 @@ pub mod refactor {
 
         let category = category
             .ok_or("oups, no object")?
-            .get("values")
-            .ok_or("shit, no values")?
-            .as_array()
-            .ok_or("fuck, no array")?;
+        .get("values")
+        .ok_or("shit, no values")?
+        .as_array()
+        .ok_or("fuck, no array")?;
 
         debug!("category: {:#?}", category);
 
@@ -99,9 +100,12 @@ pub mod refactor {
     #[derivative(Debug, PartialEq)]
     pub struct RandomRamble<'a> {
         // FIXME: how to use `T` for key ?
-        pub rambles: RambleMap<'a>,
+        pub rambles: HashMap<RambleKind<'a>, Vec<Ramble>>,
+        // pub rambles: RambleMap<'a>,
         pub templates: Vec<&'a str>,
         pub context: Option<Context>,
+        // pub filter: Option<Regex>,
+        pub filter: Option<&'a str>,
         #[derivative(PartialEq = "ignore")]
         pub tera: Option<Tera>,
     }
@@ -128,7 +132,8 @@ pub mod refactor {
         }
 
         pub fn with_ramble(mut self, kind: &'a str, value: &'a str) -> Self {
-            self.rambles.0.insert(kind.into(), vec![value.into()]);
+            // self.rambles.0.insert(kind.into(), vec![value.into()]);
+            self.rambles.insert(kind.into(), vec![value.into()]);
             self
         }
 
@@ -137,9 +142,17 @@ pub mod refactor {
             let others = Ramble {
                 category: None,
                 // values,
-                values: values.into_iter().map(|v| v.into()).collect(),
+                values: match self.filter {
+                    Some(filter) => {
+                        let filter = Regex::new(filter).unwrap();
+                        let values: Vec<&str> = values.into_iter().filter(|s| !filter.is_match(s)).collect();
+                        values.into_iter().map(|v| v.into()).collect()
+                    },
+                    None => values.into_iter().map(|v| v.into()).collect(),
+                }
             };
-            self.rambles.0.insert(kind.into(), vec![others]);
+            // self.rambles.0.insert(kind.into(), vec![others]);
+            self.rambles.insert(kind.into(), vec![others]);
             self
         }
 
@@ -155,9 +168,8 @@ pub mod refactor {
                 .filter_map(std::result::Result::ok)
                 .collect();
 
-            // debug!("others({}): {:#?}", kind, &others);
-
-            self.rambles.0.insert(kind.into(), rambles);
+            // self.rambles.0.insert(kind.into(), rambles);
+            self.rambles.insert(kind.into(), rambles);
             Ok(self)
         }
 
@@ -176,6 +188,11 @@ pub mod refactor {
             self
         }
 
+        pub fn with_filter(mut self, filter: Option<&'a str>) -> Self {
+            self.filter = filter;
+            self
+        }
+
         /// Generates a String from a template.
         /// use `to_string()` if you don't care about the Error.
         pub fn render(&self) -> Result<String> {
@@ -190,13 +207,13 @@ pub mod refactor {
             self.tera
                 .as_ref()
                 .ok_or_else(|| fail!("invalid tera object"))?
-                .render(
-                    &template_name,
-                    self.context
-                        .as_ref()
-                        .ok_or_else(|| fail!("invalid context"))?,
-                )
-                .map_err(|e| e.into())
+            .render(
+                &template_name,
+                self.context
+                    .as_ref()
+                    .ok_or_else(|| fail!("invalid context"))?,
+            )
+            .map_err(|e| e.into())
         }
 
         pub fn take(&self, n: usize) -> Vec<String> {
@@ -231,9 +248,10 @@ pub mod refactor {
             Ok(tera)
         }
 
-        fn get_context(&self) -> Result<Context> {
+
+        fn get_context(&mut self) -> Result<Context> {
             debug!("getting context");
-            debug!("rambles: {:#?}", &self.rambles);
+            trace!("rambles: {:#?}", &self.rambles);
             Context::from_serialize(&self.rambles).map_err(|e| e.into())
         }
 
@@ -248,9 +266,11 @@ pub mod refactor {
     impl Default for RandomRamble<'_> {
         fn default() -> Self {
             Self {
-                rambles: RambleMap(HashMap::new()),
+                // rambles: RambleMap(HashMap::new()),
+                rambles: HashMap::new(),
                 templates: Vec::new(),
                 context: None,
+                filter: None,
                 tera: None,
             }
         }
@@ -560,16 +580,16 @@ impl RandomRamble {
                             .iter()
                             .filter(|a| {
                                 a.entries
-                                    .iter()
-                                    .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
+                                 .iter()
+                                 .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
                             })
                             .collect(),
                         self.themes
                             .iter()
                             .filter(|a| {
                                 a.entries
-                                    .iter()
-                                    .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
+                                 .iter()
+                                 .any(|e| e.to_lowercase().starts_with(&pattern.to_lowercase()))
                             })
                             .collect(),
                     ),
@@ -577,32 +597,32 @@ impl RandomRamble {
                 };
 
                 Ok((0..number)
-                    .map(|_| {
-                        let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
-                            Some(a) => (&a.name, a.random_entry(pattern)?),
-                            None => {
-                                warn!("couldn\'t get random adjectives entries");
-                                bail!("\'chier")
-                            }
-                        };
-                        let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
-                            Some(t) => (&t.name, t.random_entry(pattern)?),
-                            None => {
-                                warn!("couldn't get random themes entries");
-                                bail!("'chier")
-                            }
-                        };
-                        if with_details {
-                            Ok(format!(
-                                "[ {:^12} | {:^12} ]\t\t{} {}",
-                                adj_name, theme_name, adj, theme
-                            ))
-                        } else {
-                            Ok(format!("{} {}", adj, theme))
-                        }
-                    })
-                    .filter_map(Result::ok)
-                    .collect())
+                   .map(|_| {
+                       let (adj_name, adj) = match adjs.choose(&mut rand::thread_rng()) {
+                           Some(a) => (&a.name, a.random_entry(pattern)?),
+                           None => {
+                               warn!("couldn\'t get random adjectives entries");
+                               bail!("\'chier")
+                           }
+                       };
+                       let (theme_name, theme) = match themes.choose(&mut rand::thread_rng()) {
+                           Some(t) => (&t.name, t.random_entry(pattern)?),
+                           None => {
+                               warn!("couldn't get random themes entries");
+                               bail!("'chier")
+                           }
+                       };
+                       if with_details {
+                           Ok(format!(
+                               "[ {:^12} | {:^12} ]\t\t{} {}",
+                               adj_name, theme_name, adj, theme
+                           ))
+                       } else {
+                           Ok(format!("{} {}", adj, theme))
+                       }
+                   })
+                   .filter_map(Result::ok)
+                   .collect())
             }
         }
     }

@@ -47,16 +47,19 @@ pub struct Config {
 
     /// Provide a template from which to generate words
     // FIXME: use custom rr filter
-    #[clap(short = 'T', long, default_value = "{{ adj }} {{ theme }}")]
+    #[clap(long, default_value = "{{ adj }} {{ theme }}")]
+    #[deprecated(
+        note = "Replaced with `templates`"
+    )]
     pub template: String,
 
     /// Provide templates from which to generate words
-    #[clap(long, default_value = "{{ adj | rr }} {{ theme | rr }}")]
+    #[clap(short = 'T', long, default_value = "{{ adj | rr }} {{ theme | rr }}")]
     pub templates: Vec<String>,
 
-    /// try the refactor version
+    /// try the legacy version
     #[clap(short, long)]
-    pub refactor: bool,
+    pub legacy: bool,
 
     /// The pattern to start with
     pub pattern: Option<String>,
