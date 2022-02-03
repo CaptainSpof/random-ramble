@@ -19,7 +19,7 @@ rayon = "1.5.1"
 
 [dependencies.serde]
 features = ["derive"]
-version = "1.0.133"
+version = "1.0.136"
 
 [dependencies.tera]
 features = ["builtins"]
