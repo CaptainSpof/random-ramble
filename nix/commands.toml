@@ -50,7 +50,7 @@ category = "dev"
 [[commands]]
 name = "bench-it"
 command = '''
-          cargo bench
+          cargo bench $@
         '''
 help = "bench random-ramble"
 category = "dev"
@@ -58,7 +58,7 @@ category = "dev"
 [[commands]]
 name = "format-it"
 command = '''
-          cargo fmt
+          cargo fmt $@
         '''
 help = "format random-ramble"
 category = "dev"
@@ -66,7 +66,7 @@ category = "dev"
 [[commands]]
 name = "build-it"
 command = '''
-          cargo build
+          cargo build $@
         '''
 help = "build random-ramble"
 category = "dev"
@@ -82,7 +82,7 @@ category = "dev"
 [[commands]]
 name = "run-it"
 command = '''
-          cargo run
+          cargo run $@
         '''
 help = "run random-ramble"
 category = "dev"
