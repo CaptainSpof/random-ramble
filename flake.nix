@@ -24,11 +24,11 @@
         pkgs = import nixpkgs { inherit system overlays; };
         rustc-version = "1.56.1";
         darwin-buildInputs = if system == "x86_64-darwin" then [pkgs.darwin.apple_sdk.frameworks.Security] else [];
-        rust = pkgs.rust-bin.stable.${rustc-version}.default;
+        myrust = pkgs.rust-bin.stable.${rustc-version}.default;
         # Override the version used in naersk
         naersk-lib = naersk.lib."${system}".override {
-          cargo = rust;
-          rustc = rust;
+          cargo = myrust;
+          rustc = myrust;
         };
       in rec {
 
@@ -82,7 +82,7 @@
               cargo-outdated # show outdated rust deps
               # build
               act # run github actions locally
-              rust
+              myrust
             ] ++ darwin-buildInputs;
 
             # commands = with pkgs; [
