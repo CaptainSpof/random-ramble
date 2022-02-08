@@ -22,7 +22,7 @@
         pname = "rr";
         overlays = [ (import rust-overlay) devshell-flake.overlay ];
         pkgs = import nixpkgs { inherit system overlays; };
-        rustc-version = "1.56.1";
+        rustc-version = "1.57.0";
         darwin-buildInputs = if system == "x86_64-darwin" then [pkgs.darwin.apple_sdk.frameworks.Security] else [];
         myrust = pkgs.rust-bin.stable.${rustc-version}.default;
         # Override the version used in naersk
