@@ -41,6 +41,7 @@ pub mod refactor {
         let values = value
             .as_array()
             .expect("must provide values alongside random");
+
         if values.is_empty() {
             debug!("empty values");
             return Ok(Value::default());
@@ -48,47 +49,51 @@ pub mod refactor {
 
         debug!("values: {:#?}", values);
 
-        let category = if let Some(category) = args.get("c") {
+        let category: Vec<&Value> = if let Some(category) = args.get("c") {
             // FIXME handle errors more politely
             values
                 .iter()
-                .find(|&x| {
-                    let a = x
-                        .as_object()
+                .find(|c| {
+                    c.as_object()
                         .expect("requires a valid object")
                         .get("category")
-                        .expect("requires a valid category");
-
-                    a == category
+                        .expect("requires a valid category")
+                        == category
                 })
-                .ok_or("nope, no match")?
+                .expect("category not found")
                 .as_object()
+                .unwrap()
+                .get("values")
+                .unwrap()
+                .as_array()
+                .unwrap()
+                .iter()
+                .collect()
         } else {
-            // get random category
-            debug!("values len: {}", values.len());
-            let rng = rand::thread_rng().gen_range(0..values.len());
-            values[rng].as_object()
+            values
+                .iter()
+                .flat_map(|v| {
+                    v.as_object()
+                        .unwrap()
+                        .get("values")
+                        .unwrap()
+                        .as_array()
+                        .unwrap()
+                })
+                .collect()
         };
 
         debug!("category: {:#?}", category);
 
-        let category = category
-            .ok_or("oups, no object")?
-            .get("values")
-            .ok_or("shit, no values")?
-            .as_array()
-            .ok_or("fuck, no array")?;
-
-        let category: Vec<Value> = if let Some(f) = args.get("starts_with") {
+        let category: Vec<_> = if let Some(f) = args.get("starts_with") {
             let f = f.as_str().unwrap().to_lowercase();
-            let c = category
-                .iter()
-                .filter(|&v| v.as_str().unwrap().to_lowercase().starts_with(&f))
-                .cloned()
-                .collect();
-            c
+            category
+                // .into_par_iter()
+                .into_iter()
+                .filter(|v| v.as_str().unwrap().to_lowercase().starts_with(&f))
+                .collect()
         } else {
-            category.to_vec()
+            category
         };
 
         if category.is_empty() {
