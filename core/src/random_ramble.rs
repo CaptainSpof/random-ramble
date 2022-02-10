@@ -264,9 +264,11 @@ pub mod refactor {
             let mut tera = Tera::default();
             tera.register_filter("rr", random_filter);
 
-            // for (name, addon) in jen::helper::builtin() {
-            //     tera.register_function(name, addon);
-            // }
+            jen::helper::builtin()
+                .into_iter()
+                .for_each(|(name, addon)| {
+                    tera.register_function(name, addon);
+                });
 
             match self.templates.len() {
                 0 => {
