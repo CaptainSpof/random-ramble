@@ -103,7 +103,7 @@
               buildInputs = [ pkgs.rustfmt ];
 
               buildPhase = ''
-                ${rust}/bin/cargo fmt -- --check | tee $out
+                ${myrust}/bin/cargo fmt -- --check | tee $out
               '';
             };
 
