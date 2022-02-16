@@ -138,4 +138,26 @@ mod test {
         // );
         assert_eq!(rr.len(), 16);
     }
+
+    #[test]
+    fn template_filter_by_categories_and_starting_pattern() {
+        let mut adj_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        adj_path.push("resources/tests/adjectives/");
+
+        let mut theme_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        theme_path.push("resources/tests/themes/");
+
+        let rr = RandomRamble::new()
+            .with_rambles_path("adj", &adj_path)
+            .expect("adjs not ok")
+            .with_rambles_path("theme", &theme_path)
+            .expect("themes not ok")
+            .with_template("{{ adj | rr(c='en', starts_with='a') }} {{ theme | rr(c='foobar', starts_with='b') }}")
+            .build()
+            .expect("we gud")
+            .to_string();
+
+        assert_eq!(rr, "Adventurous bar");
+        assert_eq!(rr.len(), 15);
+    }
 }
