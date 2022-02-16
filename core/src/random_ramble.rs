@@ -112,7 +112,7 @@ pub mod refactor {
     /// The struct that holds the collection of `rambles` and its template.
     // TODO fields shouldn't be pub
     #[derive(Derivative)]
-    #[derivative(Debug, PartialEq)]
+    #[derivative(Default, Debug, PartialEq)]
     pub struct RandomRamble<'a> {
         // FIXME: how to use `T` for key ?
         pub rambles: HashMap<RambleKind<'a>, Vec<Ramble>>,
@@ -300,19 +300,6 @@ pub mod refactor {
             self.context = Some(self.get_context()?);
 
             Ok(self)
-        }
-    }
-
-    impl Default for RandomRamble<'_> {
-        fn default() -> Self {
-            Self {
-                // rambles: RambleMap(HashMap::new()),
-                rambles: HashMap::new(),
-                templates: Vec::new(),
-                context: None,
-                filter: None,
-                tera: None,
-            }
         }
     }
 
