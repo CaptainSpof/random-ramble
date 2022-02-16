@@ -2,7 +2,7 @@
 mod test {
     use maplit::hashmap;
     use pretty_assertions::assert_eq;
-    use random_ramble::refactor::{Ramble, RambleKind, RambleMap, RandomRamble};
+    use random_ramble::refactor::{Ramble, RambleKind, RandomRamble};
     use std::{collections::HashMap, path::PathBuf};
 
     #[test]
