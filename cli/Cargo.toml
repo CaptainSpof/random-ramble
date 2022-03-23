@@ -11,7 +11,7 @@ edition = "2021"
 random-ramble = { path = "../core" }
 
 # log
-log = "0.4.14"
+log = "0.4.16"
 env_logger = "0.9.0"
 
 clap = { version = "3.1.6", features = ["derive", "cargo", "env"] }
