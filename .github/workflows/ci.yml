@@ -41,9 +41,9 @@ jobs:
       - run: nix flake check
         name: nix · linter check
         if: matrix.os != 'windows-latest'
-      - run: nix run
-        name: nix · smoke test
-        if: matrix.os != 'windows-latest'
+      # - run: nix run
+      #   name: nix · smoke test
+      #   if: matrix.os != 'windows-latest'
 
       - name: rustup · setup
         if: matrix.os == 'windows-latest'
