@@ -22,13 +22,12 @@
         pname = "rr";
         overlays = [ (import rust-overlay) devshell-flake.overlay ];
         pkgs = import nixpkgs { inherit system overlays; };
-        rustc-version = "1.57.0";
+        rust = pkgs.rust-bin.fromRustupToolchainFile ./toolchain.toml;
         darwin-buildInputs = if system == "x86_64-darwin" then [pkgs.darwin.apple_sdk.frameworks.Security] else [];
-        myrust = pkgs.rust-bin.stable.${rustc-version}.default;
         # Override the version used in naersk
         naersk-lib = naersk.lib."${system}".override {
-          cargo = myrust;
-          rustc = myrust;
+          cargo = rust;
+          rustc = rust;
         };
       in rec {
 
@@ -82,7 +81,7 @@
               cargo-outdated # show outdated rust deps
               # build
               act # run github actions locally
-              myrust
+              rust
             ] ++ darwin-buildInputs;
 
             # commands = with pkgs; [
@@ -103,7 +102,7 @@
               buildInputs = [ pkgs.rustfmt ];
 
               buildPhase = ''
-                ${myrust}/bin/cargo fmt -- --check | tee $out
+                ${rust}/bin/cargo fmt -- --check | tee $out
               '';
             };
 
