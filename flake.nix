@@ -39,7 +39,7 @@
           cargoTestCommands = inputList: inputList ++ [ ''cargo $cargo_options clippy --all --all-features --profile test''];
           buildInputs = darwin-buildInputs;
         };
-        defaultPackage = packages."${name}";
+        packages.default = packages."${name}";
 
         # docker image
         packages.dockerImage = pkgs.dockerTools.buildLayeredImage {
@@ -50,10 +50,10 @@
 
         # `nix run`
         apps."${name}" = flake-utils.lib.mkApp { drv = packages."${name}"; };
-        defaultApp = apps."${name}";
+        apps.default = apps."${name}";
 
         # `nix develop`
-        devShell = with pkgs; let
+        devShells.default = with pkgs; let
           esc = "";
 
           orange = "${esc}[38;5;202m";
