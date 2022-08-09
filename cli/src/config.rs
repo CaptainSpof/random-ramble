@@ -16,50 +16,51 @@ pub struct Config {
     #[clap(
         short,
         long,
-        parse(from_occurrences),
+        action = clap::ArgAction::Count,
         long_help = "-v:\t\tINFO|WARN|ERROR\n-vv:\tINFO|WARN|ERROR|DEBUG\n-vvv:\tINFO|WARN|ERROR|DEBUG|TRACE"
     )]
     pub verbose: u8,
 
     /// The length of the list to be returned
-    #[clap(short, env = "RR_NB_RESULT", default_value = "10")]
+    #[clap(short, env = "RR_NB_RESULT", default_value = "10", action)]
     pub number: usize,
 
     /// Path to the themes files
     // TODO: respect XDG convention
-    #[clap(long, env = "RR_THEMES_PATH", default_value = "./dict/themes")]
+    #[clap(long, env = "RR_THEMES_PATH", default_value = "./dict/themes", action)]
     pub themes_path: PathBuf,
 
     /// A list of themes to be chosen from
     ///
     /// Themes preceded by '!' will be excluded
-    #[clap(short, long)]
+    #[clap(short, long, action)]
     pub themes: Vec<String>,
 
     /// Path to the adjectives files
     // TODO: respect XDG convention
-    #[clap(long, env = "RR_ADJS_PATH", default_value = "./dict/adjectives")]
+    #[clap(long, env = "RR_ADJS_PATH", default_value = "./dict/adjectives", action)]
     pub adjectives_path: PathBuf,
 
     /// A list of adjectives to be chosen from
-    #[clap(short, long)]
+    #[clap(short, long, action)]
     pub adjs: Vec<String>,
 
     /// Provide a template from which to generate words
     // FIXME: use custom rr filter
-    #[clap(long, default_value = "{{ adj }} {{ theme }}")]
+    #[clap(long, default_value = "{{ adj }} {{ theme }}", action)]
     #[deprecated(note = "Replaced with `templates`")]
     pub template: String,
 
     /// Provide templates from which to generate words
-    #[clap(short = 'T', long, default_value = "{{ adj | rr }} {{ theme | rr }}")]
+    #[clap(short = 'T', long, default_value = "{{ adj | rr }} {{ theme | rr }}", action)]
     pub templates: Vec<String>,
 
     /// try the legacy version
-    #[clap(short, long)]
+    #[clap(short, long, action)]
     pub legacy: bool,
 
     /// The pattern to start with
+    #[clap(action)]
     pub pattern: Option<String>,
 
     /// cmd
@@ -81,15 +82,17 @@ pub enum Command {
 #[derive(Parser, Debug)]
 pub struct Edit {
     /// Provide a theme
+    #[clap(action)]
     pub theme: String,
 
     /// Provide a list of entries
     ///
     /// Will attempt to read from stdin
+    #[clap(action)]
     entries: Vec<String>,
 
     /// Work against adjectif
-    #[clap(short)]
+    #[clap(short, action)]
     pub adjs: bool,
 }
 
