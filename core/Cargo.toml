@@ -14,7 +14,7 @@ regex = "1.6.0"
 serde_json = "1.0.81"
 thiserror = "1.0.31"
 walkdir = "2.3.2"
-jen = { version = "1.1.0", default-features = false }
+jen = { version = "1.5.0", default-features = false }
 rayon = "1.5.3"
 
 [dependencies.serde]
