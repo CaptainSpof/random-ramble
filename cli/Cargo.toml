@@ -15,4 +15,4 @@ log = "0.4.17"
 env_logger = "0.9.3"
 
 clap = { version = "3.2.2", features = ["derive", "cargo", "env"] }
-serde = { version = "1.0.147", features = ["derive"] }
+serde = { version = "1.0.148", features = ["derive"] }
