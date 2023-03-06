@@ -15,7 +15,7 @@ serde_json = "1.0.93"
 thiserror = "1.0.37"
 walkdir = "2.3.2"
 jen = { version = "1.5.0", default-features = false }
-rayon = "1.6.1"
+rayon = "1.7.0"
 
 [dependencies.serde]
 features = ["derive"]
