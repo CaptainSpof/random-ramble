@@ -20,7 +20,7 @@
         version = "0.3.0";
         name = "random-ramble";
         pname = "rr";
-        overlays = [ (import rust-overlay) devshell-flake.overlay ];
+        overlays = [ (import rust-overlay) devshell-flake.overlays.default ];
         pkgs = import nixpkgs { inherit system overlays; };
         rust = pkgs.rust-bin.fromRustupToolchainFile ./toolchain.toml;
         darwin-buildInputs = if system == "x86_64-darwin" then [pkgs.darwin.apple_sdk.frameworks.Security] else [];
