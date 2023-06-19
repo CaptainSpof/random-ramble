@@ -26,7 +26,7 @@ jobs:
 
       - name: nix · setup
         if: matrix.os != 'windows-latest'
-        uses: cachix/install-nix-action@v21
+        uses: cachix/install-nix-action@v22
       - run: nix build
         name: nix · test and build the project
         if: matrix.os != 'windows-latest'
